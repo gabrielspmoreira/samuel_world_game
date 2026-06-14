@@ -1,0 +1,2244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pega-pega no Mundo do Samuel</title>
+  <style>
+    :root {
+      --ink: #17212f;
+      --paper: #fffaf0;
+      --panel: rgba(255, 250, 240, 0.96);
+      --green: #2f8f5b;
+      --blue: #2176ae;
+      --yellow: #e7b84b;
+      --coral: #d95d4f;
+      --line: rgba(24, 33, 45, 0.18);
+      --shadow: 0 18px 50px rgba(24, 33, 45, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      touch-action: none;
+      background:
+        linear-gradient(135deg, rgba(231, 184, 75, 0.42) 0 18%, rgba(47, 143, 91, 0.34) 18% 40%, rgba(33, 118, 174, 0.26) 40% 64%, rgba(217, 93, 79, 0.24) 64% 82%, rgba(108, 129, 148, 0.30) 82% 100%),
+        #fff6db;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 900;
+      transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 7px 18px rgba(24, 33, 45, 0.18);
+    }
+
+    button:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(24, 33, 45, 0.2);
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      min-height: 100dvh;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+
+    .menu-panel {
+      width: min(1040px, calc(100vw - 32px));
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(280px, 390px);
+      gap: 24px;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .title-block {
+      display: flex;
+      min-height: 420px;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      max-width: 11ch;
+      margin: 0 0 14px;
+      color: #173a2a;
+      font-size: clamp(2.6rem, 7vw, 5.4rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .byline {
+      width: fit-content;
+      margin: 0 0 18px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #18212d;
+      background: #f7d36d;
+      font-weight: 900;
+    }
+
+    .intro {
+      max-width: 38rem;
+      margin: 0;
+      color: #334155;
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .creator {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .creator h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .hero-carousel {
+      display: grid;
+      grid-template-columns: 46px 1fr 46px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .carousel-button {
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: var(--blue);
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .hero-card {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      border: 1px solid rgba(24, 33, 45, 0.16);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 32%, rgba(255, 255, 255, 0.98) 0 28%, rgba(247, 211, 109, 0.30) 29% 52%, rgba(47, 143, 91, 0.20) 53% 100%),
+        #fffdf5;
+    }
+
+    #heroPreview {
+      width: min(210px, 58vw);
+      height: min(210px, 58vw);
+      object-fit: contain;
+      image-rendering: auto;
+      filter: drop-shadow(0 10px 12px rgba(24, 33, 45, 0.22));
+    }
+
+    .hero-name {
+      min-height: 30px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 900;
+    }
+
+    .hero-dots {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .hero-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(24, 33, 45, 0.24);
+    }
+
+    .hero-dot.active {
+      width: 24px;
+      background: var(--blue);
+    }
+
+    .start-button {
+      min-height: 50px;
+      padding: 12px 18px;
+      background: var(--green);
+    }
+
+    .game {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: #1b2632;
+      width: 100vw;
+      height: 100dvh;
+    }
+
+    .game.active {
+      display: block;
+    }
+
+    #gameCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .hud {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(6, max-content) 44px;
+      gap: 8px;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hud-pill {
+      min-width: 100px;
+      padding: 9px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(24, 33, 45, 0.76);
+      box-shadow: 0 8px 24px rgba(24, 33, 45, 0.24);
+      backdrop-filter: blur(10px);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .hud-pill.wide {
+      min-width: 210px;
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: auto;
+      background: var(--coral);
+    }
+
+    .message {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: none;
+      place-items: center;
+      padding: 22px;
+      background: rgba(24, 33, 45, 0.36);
+      backdrop-filter: blur(3px);
+    }
+
+    .message.active {
+      display: grid;
+    }
+
+    .message-panel {
+      width: min(540px, calc(100vw - 32px));
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .message-panel h2 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .message-panel p {
+      margin: 0 0 18px;
+      color: #334155;
+      line-height: 1.45;
+    }
+
+    .message-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .message-actions button {
+      min-width: 150px;
+      padding: 11px 14px;
+    }
+
+    .message-actions .secondary {
+      color: var(--ink);
+      background: #f7d36d;
+    }
+
+    .touch-controls {
+      position: absolute;
+      right: max(18px, env(safe-area-inset-right));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 3;
+      width: 156px;
+      height: 156px;
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 8px;
+      pointer-events: auto;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .dpad-button {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.54);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(24, 33, 45, 0.72);
+      box-shadow: 0 8px 22px rgba(24, 33, 45, 0.30);
+      backdrop-filter: blur(8px);
+      font-size: 1.25rem;
+    }
+
+    .dpad-button:active,
+    .dpad-button.active {
+      background: rgba(33, 118, 174, 0.88);
+      transform: scale(0.96);
+    }
+
+    .dpad-up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .dpad-left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .dpad-right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .dpad-down {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .dpad-center {
+      grid-column: 2;
+      grid-row: 2;
+      border-radius: 999px;
+      background: rgba(255, 250, 240, 0.36);
+      box-shadow: inset 0 0 0 1px rgba(24, 33, 45, 0.22);
+    }
+
+    @media (max-width: 860px) {
+      .menu-panel {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 20px;
+      }
+
+      .title-block {
+        min-height: auto;
+      }
+
+      h1 {
+        max-width: 10ch;
+        font-size: 3rem;
+      }
+
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, max-content)) 44px;
+        align-items: start;
+      }
+
+      .hud-pill {
+        min-width: 0;
+        font-size: 0.88rem;
+      }
+
+      .hud-pill.wide {
+        grid-column: 1 / span 2;
+        min-width: 0;
+      }
+    }
+
+    @media (pointer: coarse) {
+      .touch-controls {
+        display: grid;
+      }
+
+      .hud {
+        top: max(8px, env(safe-area-inset-top));
+        left: max(8px, env(safe-area-inset-left));
+        right: max(8px, env(safe-area-inset-right));
+        grid-template-columns: repeat(3, max-content);
+      }
+
+      .hud-pill {
+        padding: 7px 9px;
+        min-width: 0;
+        font-size: 0.82rem;
+      }
+
+      .hud-pill.wide {
+        max-width: min(48vw, 280px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .icon-button {
+        width: 38px;
+        height: 38px;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 540px) {
+      .menu-panel {
+        width: min(960px, calc(100vw - 20px));
+        max-height: calc(100dvh - 20px);
+        grid-template-columns: minmax(260px, 1fr) minmax(260px, 340px);
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .title-block {
+        min-height: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 6vw, 3.6rem);
+      }
+
+      .intro {
+        font-size: 0.95rem;
+      }
+
+      .creator {
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .hero-card {
+        min-height: 170px;
+        padding: 8px;
+      }
+
+      #heroPreview {
+        width: min(150px, 32vw);
+        height: min(150px, 32vw);
+      }
+
+      .touch-controls {
+        width: 138px;
+        height: 138px;
+        gap: 7px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section id="menuScreen" class="screen">
+      <div class="menu-panel">
+        <div class="title-block">
+          <p class="byline">Criado com Samuel</p>
+          <h1>Pega-pega no Mundo do Samuel</h1>
+          <p class="intro">Escolha um heroi, pegue moedas e poderes, atravesse passagens nas beiradas da tela e fuja dos cacadores ate o relogio zerar.</p>
+        </div>
+
+        <form id="characterForm" class="creator">
+          <h2>Escolha seu heroi</h2>
+          <div class="hero-carousel" aria-label="Galeria de personagens">
+            <button id="prevHero" class="carousel-button" type="button" title="Personagem anterior">&lt;</button>
+            <div class="hero-card">
+              <img id="heroPreview" src="assets/heroes/sam.gif" alt="Personagem selecionado">
+            </div>
+            <button id="nextHero" class="carousel-button" type="button" title="Proximo personagem">&gt;</button>
+          </div>
+          <div id="heroName" class="hero-name">Samuel Explorador</div>
+          <div id="heroDots" class="hero-dots" aria-hidden="true"></div>
+          <button class="start-button" type="submit">Comecar aventura</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="game" aria-label="Jogo Pega-pega no Mundo do Samuel">
+      <canvas id="gameCanvas"></canvas>
+
+      <div class="hud">
+        <div id="roundHud" class="hud-pill">Rodada 1</div>
+        <div id="timeHud" class="hud-pill">Tempo 45s</div>
+        <div id="livesHud" class="hud-pill">Vidas 3</div>
+        <div id="scoreHud" class="hud-pill">Pontos 0</div>
+        <div id="biomeHud" class="hud-pill">Floresta</div>
+        <div id="effectHud" class="hud-pill wide">Sem poder ativo</div>
+        <button id="pauseButton" class="icon-button" type="button" title="Pausar">II</button>
+      </div>
+
+      <div id="messageLayer" class="message" role="dialog" aria-live="polite"></div>
+      <div id="touchControls" class="touch-controls" aria-label="Controle direcional">
+        <button class="dpad-button dpad-up" type="button" data-x="0" data-y="-1" aria-label="Mover para cima">▲</button>
+        <button class="dpad-button dpad-left" type="button" data-x="-1" data-y="0" aria-label="Mover para esquerda">◀</button>
+        <div class="dpad-center" aria-hidden="true"></div>
+        <button class="dpad-button dpad-right" type="button" data-x="1" data-y="0" aria-label="Mover para direita">▶</button>
+        <button class="dpad-button dpad-down" type="button" data-x="0" data-y="1" aria-label="Mover para baixo">▼</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const ROUND_SECONDS = 45;
+    const PLAYER_RADIUS = 20;
+    const HUNTER_RADIUS = 18;
+    const COIN_VALUE = 10;
+    const WORLD = { width: 1280, height: 720 };
+
+    const menuScreen = document.getElementById("menuScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const characterForm = document.getElementById("characterForm");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const messageLayer = document.getElementById("messageLayer");
+    const roundHud = document.getElementById("roundHud");
+    const timeHud = document.getElementById("timeHud");
+    const livesHud = document.getElementById("livesHud");
+    const scoreHud = document.getElementById("scoreHud");
+    const biomeHud = document.getElementById("biomeHud");
+    const effectHud = document.getElementById("effectHud");
+    const pauseButton = document.getElementById("pauseButton");
+    const heroPreview = document.getElementById("heroPreview");
+    const heroName = document.getElementById("heroName");
+    const heroDots = document.getElementById("heroDots");
+    const prevHero = document.getElementById("prevHero");
+    const nextHero = document.getElementById("nextHero");
+    const touchControls = document.getElementById("touchControls");
+
+    const heroOptions = [
+      { id: "sam", name: "Samuel Explorador", src: "assets/heroes/sam.gif" },
+      { id: "luna", name: "Luna das Trilhas", src: "assets/heroes/luna.gif" },
+      { id: "tito", name: "Tito Coragem", src: "assets/heroes/tito.gif" },
+      { id: "nina", name: "Nina Veloz", src: "assets/heroes/nina.gif" },
+      { id: "kai", name: "Kai Relampago", src: "assets/heroes/kai.gif" },
+      { id: "bia", name: "Bia Aventureira", src: "assets/heroes/bia.gif" },
+      { id: "leo", name: "Leo do Sol", src: "assets/heroes/leo.gif" },
+      { id: "maya", name: "Maya Azul", src: "assets/heroes/maya.gif" }
+    ];
+
+    const vehicleSources = {
+      boat: "assets/vehicles/boat.gif",
+      car: "assets/vehicles/car.gif",
+      ski: "assets/vehicles/ski.gif",
+      horse: "assets/vehicles/horse.gif",
+      camel: "assets/vehicles/camel.gif",
+      tunnel: "assets/vehicles/tunnel.gif"
+    };
+
+    const powerSources = {
+      slow: "assets/powers/slow.gif",
+      shield: "assets/powers/shield.gif",
+      blast: "assets/powers/blast.gif"
+    };
+
+    const portalSources = {
+      forest: "assets/portals/forest.gif",
+      desert: "assets/portals/desert.gif",
+      snow: "assets/portals/snow.gif",
+      beach: "assets/portals/beach.gif",
+      city: "assets/portals/city.gif",
+      mountain: "assets/portals/mountain.gif"
+    };
+
+    const biomes = {
+      forest: { name: "Floresta", colors: ["#6bc06f", "#287a48", "#174c34"] },
+      desert: { name: "Deserto", colors: ["#f7d681", "#d99a43", "#a96f34"] },
+      snow: { name: "Neve", colors: ["#f3fbff", "#b8ddec", "#6ca6c2"] },
+      beach: { name: "Praia", colors: ["#78c7e7", "#f3cf7c", "#dca34d"] },
+      city: { name: "Cidade", colors: ["#93a4b4", "#5f7182", "#303b49"] },
+      mountain: { name: "Montanha", colors: ["#b9b2a0", "#747b71", "#3f4643"] }
+    };
+
+    const roomLinks = {
+      desert: { right: "forest", bottom: "beach" },
+      forest: { left: "desert", right: "snow", bottom: "city" },
+      snow: { left: "forest", bottom: "mountain" },
+      beach: { top: "desert", right: "city" },
+      city: { left: "beach", top: "forest", right: "mountain" },
+      mountain: { left: "city", top: "snow" }
+    };
+
+    const shortcutPlans = {
+      desert: [{ id: "camel", label: "Camelo", fx: 0.23, fy: 0.58, radius: 48, duration: 7, speed: 1.55, vehicle: "camel" }],
+      forest: [{ id: "horse", label: "Cavalo", fx: 0.28, fy: 0.66, radius: 48, duration: 7, speed: 1.55, vehicle: "horse" }],
+      snow: [{ id: "ski", label: "Esqui", fx: 0.70, fy: 0.34, radius: 48, duration: 7, speed: 1.65, vehicle: "ski" }],
+      beach: [{ id: "boat", label: "Barquinho", fx: 0.30, fy: 0.72, radius: 50, duration: 7, speed: 1.85, vehicle: "boat" }],
+      city: [{ id: "car", label: "Carro", fx: 0.58, fy: 0.60, radius: 48, duration: 6, speed: 1.75, vehicle: "car" }],
+      mountain: [
+        { id: "tunnelA", label: "Tunel secreto", fx: 0.27, fy: 0.42, radius: 50, type: "teleport", vehicle: "tunnel", targetFx: 0.75, targetFy: 0.70 },
+        { id: "tunnelB", label: "Tunel secreto", fx: 0.75, fy: 0.70, radius: 50, type: "teleport", vehicle: "tunnel", targetFx: 0.27, targetFy: 0.42 }
+      ]
+    };
+
+    const collectiblePlans = {
+      forest: [
+        coin("forest-c1", 0.44, 0.42), coin("forest-c2", 0.57, 0.55), coin("forest-c3", 0.38, 0.72), coin("forest-c4", 0.78, 0.45),
+        power("forest-slow", "slow", 0.67, 0.73)
+      ],
+      desert: [
+        coin("desert-c1", 0.33, 0.35), coin("desert-c2", 0.50, 0.54), coin("desert-c3", 0.78, 0.61), coin("desert-c4", 0.18, 0.76),
+        power("desert-blast", "blast", 0.62, 0.37)
+      ],
+      snow: [
+        coin("snow-c1", 0.24, 0.55), coin("snow-c2", 0.47, 0.67), coin("snow-c3", 0.82, 0.48), coin("snow-c4", 0.58, 0.25),
+        power("snow-shield", "shield", 0.34, 0.32)
+      ],
+      beach: [
+        coin("beach-c1", 0.20, 0.43), coin("beach-c2", 0.47, 0.35), coin("beach-c3", 0.70, 0.50), coin("beach-c4", 0.84, 0.74),
+        power("beach-slow", "slow", 0.55, 0.72)
+      ],
+      city: [
+        coin("city-c1", 0.35, 0.40), coin("city-c2", 0.50, 0.67), coin("city-c3", 0.66, 0.42), coin("city-c4", 0.82, 0.58),
+        power("city-blast", "blast", 0.47, 0.24)
+      ],
+      mountain: [
+        coin("mount-c1", 0.30, 0.62), coin("mount-c2", 0.50, 0.49), coin("mount-c3", 0.68, 0.34), coin("mount-c4", 0.82, 0.78),
+        power("mount-shield", "shield", 0.52, 0.76)
+      ]
+    };
+
+    function coin(id, fx, fy) {
+      return { id, kind: "coin", fx, fy, radius: 16 };
+    }
+
+    function power(id, powerType, fx, fy) {
+      return { id, kind: "power", powerType, fx, fy, radius: 24 };
+    }
+
+    const keys = new Set();
+    const vehicleImages = {};
+    const heroImages = {};
+    const powerImages = {};
+    const portalImages = {};
+    for (const [key, src] of Object.entries(vehicleSources)) {
+      vehicleImages[key] = makeImage(src);
+    }
+    for (const [key, src] of Object.entries(powerSources)) {
+      powerImages[key] = makeImage(src);
+    }
+    for (const [key, src] of Object.entries(portalSources)) {
+      portalImages[key] = makeImage(src);
+    }
+    for (const hero of heroOptions) {
+      heroImages[hero.id] = makeImage(hero.src);
+    }
+
+    let selectedHeroIndex = 0;
+    let selectedHero = heroOptions[0];
+    let state = "menu";
+    let activeBiomeId = "forest";
+    let lastFrame = 0;
+    let round = 1;
+    let lives = 3;
+    let score = 0;
+    let timeLeft = ROUND_SECONDS;
+    let messageTimer = 0;
+    let flashTimer = 0;
+    let transitionLock = 0;
+    let respawnTimer = 0;
+    let screenShake = 0;
+    let lastMessage = "";
+    let decorations = [];
+    let obstacles = [];
+    let waterZones = [];
+    let shortcuts = [];
+    let collectibles = [];
+    let hunters = [];
+    let projectiles = [];
+    let particles = [];
+    let coinState = new Set();
+    let powerState = new Set();
+    let activeEffects = { slow: 0, shield: 0 };
+    let touchVector = { x: 0, y: 0, pointerId: null };
+    let dialogActions = null;
+    let audioContext = null;
+    let musicTimer = null;
+    let currentMusicBiome = "";
+    let musicStep = 0;
+
+    const player = {
+      x: 640,
+      y: 360,
+      vx: 0,
+      vy: 0,
+      radius: PLAYER_RADIUS,
+      facing: 0,
+      invincible: 0,
+      boostTimer: 0,
+      boostName: "",
+      boostVehicle: "",
+      boostSpeed: 1,
+      hitShake: 0
+    };
+
+    const biomeIds = Object.keys(biomes);
+
+    const musicPatterns = {
+      forest: { tempo: 170, wave: "triangle", notes: [60, 64, 67, 72, 67, 64, 62, 67], bass: [48, 48, 55, 55] },
+      desert: { tempo: 190, wave: "sine", notes: [57, 60, 64, 65, 64, 60, 55, 57], bass: [45, 45, 52, 52] },
+      snow: { tempo: 230, wave: "sine", notes: [72, 76, 79, 84, 83, 79, 76, 72], bass: [48, 55, 52, 55] },
+      beach: { tempo: 165, wave: "triangle", notes: [64, 67, 69, 72, 69, 67, 64, 62], bass: [40, 47, 52, 47] },
+      city: { tempo: 145, wave: "square", notes: [60, 63, 67, 70, 67, 63, 58, 60], bass: [36, 43, 46, 43] },
+      mountain: { tempo: 210, wave: "sawtooth", notes: [55, 62, 67, 74, 72, 67, 62, 55], bass: [43, 43, 50, 50] }
+    };
+
+    function makeImage(src) {
+      const image = new Image();
+      image.src = src;
+      return image;
+    }
+
+    function randomBiomeId() {
+      return biomeIds[Math.floor(Math.random() * biomeIds.length)] || "forest";
+    }
+
+    function ensureAudio() {
+      if (!audioContext) {
+        const AudioCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtor) return null;
+        audioContext = new AudioCtor();
+      }
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      return audioContext;
+    }
+
+    function midiToFrequency(note) {
+      return 440 * Math.pow(2, (note - 69) / 12);
+    }
+
+    function playNote(note, duration, type, gainValue) {
+      const audio = ensureAudio();
+      if (!audio) return;
+      const now = audio.currentTime;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = type;
+      osc.frequency.value = midiToFrequency(note);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain);
+      gain.connect(audio.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+
+    function playBiomeMusic(id) {
+      const audio = ensureAudio();
+      if (!audio || currentMusicBiome === id) return;
+      stopMusic(false);
+      currentMusicBiome = id;
+      musicStep = 0;
+      const pattern = musicPatterns[id] || musicPatterns.forest;
+      musicTimer = window.setInterval(() => {
+        if (!audioContext || audioContext.state !== "running") return;
+        const note = pattern.notes[musicStep % pattern.notes.length];
+        const bass = pattern.bass[musicStep % pattern.bass.length];
+        playNote(note, 0.16, pattern.wave, 0.045);
+        if (musicStep % 2 === 0) playNote(bass, 0.22, "triangle", 0.025);
+        musicStep += 1;
+      }, pattern.tempo);
+    }
+
+    function stopMusic(clearBiome = true) {
+      if (musicTimer) {
+        window.clearInterval(musicTimer);
+        musicTimer = null;
+      }
+      if (clearBiome) currentMusicBiome = "";
+    }
+
+    function seedRand(seed) {
+      let value = seed;
+      return () => {
+        value = (value * 1664525 + 1013904223) % 4294967296;
+        return value / 4294967296;
+      };
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function rectCircleCollide(rect, x, y, radius) {
+      const nearestX = clamp(x, rect.x, rect.x + rect.w);
+      const nearestY = clamp(y, rect.y, rect.y + rect.h);
+      return Math.hypot(x - nearestX, y - nearestY) < radius;
+    }
+
+    function getActiveBiome() {
+      return biomes[activeBiomeId] || biomes.forest;
+    }
+
+    function relRect(x, y, w, h, kind) {
+      return { x: WORLD.width * x, y: WORLD.height * y, w: WORLD.width * w, h: WORLD.height * h, kind };
+    }
+
+    function resizeCanvas() {
+      const rect = gameScreen.getBoundingClientRect();
+      const width = Math.max(1, rect.width);
+      const height = Math.max(1, rect.height);
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      WORLD.width = width;
+      WORLD.height = height;
+
+      if (gameScreen.classList.contains("active")) {
+        buildScene();
+        player.x = clamp(player.x, player.radius + 12, WORLD.width - player.radius - 12);
+        player.y = clamp(player.y, player.radius + 12, WORLD.height - player.radius - 12);
+      }
+    }
+
+    function buildScene() {
+      obstacles = makeRoomObstacles(activeBiomeId);
+      waterZones = makeRoomWater(activeBiomeId);
+      shortcuts = (shortcutPlans[activeBiomeId] || []).map((plan) => ({
+        ...plan,
+        x: WORLD.width * plan.fx,
+        y: WORLD.height * plan.fy,
+        cooldown: 0
+      }));
+      collectibles = (collectiblePlans[activeBiomeId] || [])
+        .filter((item) => !coinState.has(item.id) && !powerState.has(item.id))
+        .map((item) => ({ ...item, x: WORLD.width * item.fx, y: WORLD.height * item.fy, bob: Math.random() * Math.PI * 2 }));
+      decorations = buildDecorations();
+    }
+
+    function makeRoomWater(id) {
+      if (id !== "beach") return [];
+      return [relRect(0, 0.60, 1, 0.40, "water"), relRect(0.02, 0.48, 0.20, 0.22, "water")];
+    }
+
+    function makeRoomObstacles(id) {
+      if (id === "desert") {
+        return [relRect(0.07, 0.20, 0.13, 0.18, "cactus"), relRect(0.72, 0.17, 0.18, 0.20, "ruin"), relRect(0.42, 0.72, 0.26, 0.08, "dune-wall"), relRect(0.15, 0.78, 0.16, 0.08, "rock")];
+      }
+      if (id === "forest") {
+        return [relRect(0.07, 0.16, 0.18, 0.20, "giant-tree"), relRect(0.73, 0.18, 0.18, 0.20, "giant-tree"), relRect(0.38, 0.19, 0.24, 0.07, "wood-platform"), relRect(0.13, 0.78, 0.22, 0.08, "wood-platform"), relRect(0.67, 0.72, 0.20, 0.09, "bush")];
+      }
+      if (id === "snow") {
+        return [relRect(0.08, 0.20, 0.20, 0.13, "snow-pine"), relRect(0.63, 0.18, 0.25, 0.08, "ice-platform"), relRect(0.18, 0.74, 0.28, 0.08, "ice-platform"), relRect(0.73, 0.66, 0.15, 0.15, "snow-rock")];
+      }
+      if (id === "beach") {
+        return [relRect(0.08, 0.18, 0.14, 0.18, "palm"), relRect(0.68, 0.17, 0.20, 0.08, "pier"), relRect(0.45, 0.42, 0.18, 0.10, "shell-rock")];
+      }
+      if (id === "city") {
+        return [relRect(0.09, 0.20, 0.18, 0.18, "building"), relRect(0.73, 0.19, 0.18, 0.18, "building"), relRect(0.13, 0.70, 0.18, 0.16, "building"), relRect(0.70, 0.70, 0.18, 0.16, "building"), relRect(0.40, 0.23, 0.20, 0.07, "scaffold")];
+      }
+      return [relRect(0.08, 0.18, 0.18, 0.18, "rock"), relRect(0.69, 0.18, 0.20, 0.20, "rock"), relRect(0.42, 0.23, 0.16, 0.08, "rope-bridge"), relRect(0.16, 0.75, 0.22, 0.09, "rock"), relRect(0.64, 0.76, 0.18, 0.08, "rope-bridge")];
+    }
+
+    function buildDecorations() {
+      const seed = activeBiomeId.split("").reduce((total, letter) => total + letter.charCodeAt(0), 20260614);
+      const rand = seedRand(seed);
+      const result = [];
+      const count = activeBiomeId === "city" ? 28 : 48;
+      for (let i = 0; i < count; i += 1) {
+        result.push({
+          x: 30 + rand() * Math.max(1, WORLD.width - 60),
+          y: 86 + rand() * Math.max(1, WORLD.height - 130),
+          size: 7 + rand() * 24,
+          rot: rand() * Math.PI * 2
+        });
+      }
+      return result;
+    }
+
+    function collidesObstacles(x, y, radius) {
+      return obstacles.some((rect) => rectCircleCollide(rect, x, y, radius));
+    }
+
+    function portalSpan(dir) {
+      return dir === "left" || dir === "right" ? Math.min(220, WORLD.height * 0.34) : Math.min(260, WORLD.width * 0.34);
+    }
+
+    function isInsidePortal(dir, coord) {
+      const links = roomLinks[activeBiomeId] || {};
+      if (!links[dir] || transitionLock > 0) return false;
+      const center = dir === "left" || dir === "right" ? WORLD.height / 2 : WORLD.width / 2;
+      return Math.abs(coord - center) <= portalSpan(dir) / 2;
+    }
+
+    function isBlocked(x, y, radius) {
+      if (x < radius) return !isInsidePortal("left", y);
+      if (x > WORLD.width - radius) return !isInsidePortal("right", y);
+      if (y < radius) return !isInsidePortal("top", x);
+      if (y > WORLD.height - radius) return !isInsidePortal("bottom", x);
+      return collidesObstacles(x, y, radius);
+    }
+
+    function isWater(x, y) {
+      return waterZones.some((zone) => x >= zone.x && x <= zone.x + zone.w && y >= zone.y && y <= zone.y + zone.h);
+    }
+
+    function moveCircle(entity, vx, vy, dt) {
+      const isPlayer = entity === player;
+      const nextX = entity.x + vx * dt;
+      if (isPlayer) {
+        if (!isBlocked(nextX, entity.y, entity.radius)) entity.x = nextX;
+      } else if (nextX >= entity.radius && nextX <= WORLD.width - entity.radius && !collidesObstacles(nextX, entity.y, entity.radius)) {
+        entity.x = nextX;
+      }
+
+      const nextY = entity.y + vy * dt;
+      if (isPlayer) {
+        if (!isBlocked(entity.x, nextY, entity.radius)) entity.y = nextY;
+        handlePortalTransition();
+      } else if (nextY >= entity.radius && nextY <= WORLD.height - entity.radius && !collidesObstacles(entity.x, nextY, entity.radius)) {
+        entity.y = nextY;
+      }
+    }
+
+    function getPortalExit() {
+      const margin = player.radius * 0.75;
+      if (player.x < -margin && isInsidePortal("left", player.y)) return { dir: "left", target: roomLinks[activeBiomeId].left };
+      if (player.x > WORLD.width + margin && isInsidePortal("right", player.y)) return { dir: "right", target: roomLinks[activeBiomeId].right };
+      if (player.y < -margin && isInsidePortal("top", player.x)) return { dir: "top", target: roomLinks[activeBiomeId].top };
+      if (player.y > WORLD.height + margin && isInsidePortal("bottom", player.x)) return { dir: "bottom", target: roomLinks[activeBiomeId].bottom };
+      return null;
+    }
+
+    function handlePortalTransition() {
+      const exit = getPortalExit();
+      if (!exit) return;
+      activeBiomeId = exit.target;
+      buildScene();
+      playBiomeMusic(activeBiomeId);
+      if (exit.dir === "left") player.x = WORLD.width - player.radius - 28;
+      if (exit.dir === "right") player.x = player.radius + 28;
+      if (exit.dir === "top") player.y = WORLD.height - player.radius - 28;
+      if (exit.dir === "bottom") player.y = player.radius + 28;
+      player.x = clamp(player.x, player.radius + 20, WORLD.width - player.radius - 20);
+      player.y = clamp(player.y, player.radius + 20, WORLD.height - player.radius - 20);
+      player.invincible = 0.75;
+      transitionLock = 0.55;
+      projectiles = [];
+      hunters = spawnHunters();
+      showToast(`Passagem para ${getActiveBiome().name}!`, 1.8);
+    }
+
+    function startGame() {
+      if (state === "playing") return;
+      selectedHero = heroOptions[selectedHeroIndex];
+      ensureAudio();
+      round = 1;
+      lives = 3;
+      score = 0;
+      menuScreen.style.display = "none";
+      gameScreen.classList.add("active");
+      resizeCanvas();
+      startRound();
+    }
+
+    function startRound() {
+      state = "playing";
+      pauseButton.textContent = "II";
+      timeLeft = ROUND_SECONDS;
+      coinState = new Set();
+      powerState = new Set();
+      activeEffects = { slow: 0, shield: 0 };
+      projectiles = [];
+      particles = [];
+      flashTimer = 0;
+      respawnTimer = 0;
+      screenShake = 0;
+      placePlayerInRandomScene();
+      hunters = spawnHunters();
+      hideMessage();
+      showToast("Pegue moedas, poderes e use as passagens!", 2.4);
+      updateHud();
+      lastFrame = performance.now();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function resetPlayerPosition() {
+      placePlayerInRandomScene();
+    }
+
+    function placePlayerInRandomScene() {
+      activeBiomeId = randomBiomeId();
+      buildScene();
+      const spot = safePlayerCenter();
+      player.x = spot.x;
+      player.y = spot.y;
+      player.vx = 0;
+      player.vy = 0;
+      player.facing = 0;
+      player.invincible = 1.5;
+      player.boostTimer = 0;
+      player.boostName = "";
+      player.boostVehicle = "";
+      player.boostSpeed = 1;
+      player.hitShake = 0;
+      transitionLock = 0;
+      playBiomeMusic(activeBiomeId);
+    }
+
+    function safePlayerCenter() {
+      const candidates = [
+        { x: WORLD.width / 2, y: WORLD.height / 2 },
+        { x: WORLD.width * 0.42, y: WORLD.height * 0.46 },
+        { x: WORLD.width * 0.58, y: WORLD.height * 0.54 },
+        { x: WORLD.width * 0.50, y: WORLD.height * 0.66 },
+        { x: WORLD.width * 0.50, y: WORLD.height * 0.34 }
+      ];
+      return candidates.find((point) => !collidesObstacles(point.x, point.y, player.radius + 6)) || candidates[0];
+    }
+
+    function spawnHunters() {
+      const count = Math.min(5, 1 + Math.floor((round - 1) / 2));
+      const spawnPoints = [
+        { x: WORLD.width * 0.12, y: WORLD.height * 0.16 },
+        { x: WORLD.width * 0.88, y: WORLD.height * 0.18 },
+        { x: WORLD.width * 0.12, y: WORLD.height * 0.84 },
+        { x: WORLD.width * 0.88, y: WORLD.height * 0.82 },
+        { x: WORLD.width * 0.50, y: WORLD.height * 0.14 }
+      ].sort((a, b) => Math.hypot(b.x - player.x, b.y - player.y) - Math.hypot(a.x - player.x, a.y - player.y));
+
+      const result = [];
+      for (let i = 0; i < count; i += 1) {
+        const point = safeSpawnPoint(spawnPoints[i % spawnPoints.length]);
+        result.push({
+          x: point.x,
+          y: point.y,
+          radius: HUNTER_RADIUS,
+          speed: 86 + round * 8 + i * 5,
+          wobble: Math.random() * Math.PI * 2,
+          cooldown: 1.4 + Math.random(),
+          aimTimer: 0,
+          aimTarget: null,
+          stuckTimer: 0
+        });
+      }
+      return result;
+    }
+
+    function safeSpawnPoint(start) {
+      const candidates = [
+        start,
+        { x: WORLD.width * 0.18, y: WORLD.height * 0.20 },
+        { x: WORLD.width * 0.82, y: WORLD.height * 0.20 },
+        { x: WORLD.width * 0.18, y: WORLD.height * 0.80 },
+        { x: WORLD.width * 0.82, y: WORLD.height * 0.80 },
+        { x: WORLD.width * 0.50, y: WORLD.height * 0.18 },
+        { x: WORLD.width * 0.50, y: WORLD.height * 0.82 }
+      ];
+      return candidates.find((point) => point.x > 40 && point.x < WORLD.width - 40 && point.y > 40 && point.y < WORLD.height - 40 && !collidesObstacles(point.x, point.y, HUNTER_RADIUS + 2)) || candidates[1];
+    }
+
+    function pauseGame() {
+      if (state !== "playing") return;
+      state = "paused";
+      pauseButton.textContent = ">";
+      if (audioContext) audioContext.suspend();
+      showMessage("Pausado", "A aventura espera por voces.", "Continuar", () => {
+        hideMessage();
+        pauseButton.textContent = "II";
+        if (audioContext) audioContext.resume();
+        state = "playing";
+        lastFrame = performance.now();
+        requestAnimationFrame(gameLoop);
+      }, "Recomecar", () => {
+        hideMessage();
+        pauseButton.textContent = "II";
+        startGame();
+      });
+    }
+
+    function winRound() {
+      state = "roundWin";
+      pauseButton.textContent = "II";
+      score += 50 + round * 10;
+      showMessage(`Rodada ${round} completa!`, `Bonus de sobrevivencia! Pontos: ${score}.`, "Proxima rodada", () => {
+        round += 1;
+        hideMessage();
+        startRound();
+      }, "Recomecar", () => {
+        hideMessage();
+        startGame();
+      });
+    }
+
+    function loseLife(reason) {
+      if (flashTimer > 0 || player.invincible > 0 || activeEffects.shield > 0) return;
+      lives -= 1;
+      flashTimer = 1;
+      screenShake = 0.55;
+      player.hitShake = 0.55;
+      spawnSparkles(player.x, player.y, "#ff7a67", 26);
+      if (lives <= 0) {
+        state = "gameOver";
+        pauseButton.textContent = "II";
+        stopMusic();
+        showMessage("Fim da partida", `${reason} Pontos finais: ${score}.`, "Jogar de novo", () => {
+          hideMessage();
+          startGame();
+        }, "Voltar ao menu", () => {
+          hideMessage();
+          state = "menu";
+          gameScreen.classList.remove("active");
+          menuScreen.style.display = "grid";
+          renderHeroCarousel();
+        });
+        return;
+      }
+      player.invincible = 1.2;
+      respawnTimer = 0.60;
+      hunters = [];
+      projectiles = [];
+      showToast("Voce foi pego! Preparando outro cenario...", 1.8);
+    }
+
+    function showMessage(title, body, primaryText, primaryAction, secondaryText, secondaryAction) {
+      messageLayer.innerHTML = "";
+      const panel = document.createElement("div");
+      panel.className = "message-panel";
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const paragraph = document.createElement("p");
+      paragraph.textContent = body;
+      const actions = document.createElement("div");
+      actions.className = "message-actions";
+      const primary = document.createElement("button");
+      primary.type = "button";
+      primary.textContent = primaryText;
+      primary.addEventListener("click", primaryAction);
+      actions.appendChild(primary);
+      if (secondaryText && secondaryAction) {
+        const secondary = document.createElement("button");
+        secondary.type = "button";
+        secondary.className = "secondary";
+        secondary.textContent = secondaryText;
+        secondary.addEventListener("click", secondaryAction);
+        actions.appendChild(secondary);
+      }
+      dialogActions = { primary: primaryAction, secondary: secondaryAction || null };
+      panel.append(heading, paragraph, actions);
+      messageLayer.appendChild(panel);
+      messageLayer.classList.add("active");
+      if (primary.focus) primary.focus({ preventScroll: true });
+    }
+
+    function hideMessage() {
+      messageLayer.classList.remove("active");
+      messageLayer.innerHTML = "";
+      dialogActions = null;
+    }
+
+    function showToast(text, seconds) {
+      lastMessage = text;
+      messageTimer = seconds;
+    }
+
+    function update(dt) {
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+        winRound();
+        updateHud();
+        return;
+      }
+
+      transitionLock = Math.max(0, transitionLock - dt);
+      messageTimer = Math.max(0, messageTimer - dt);
+      flashTimer = Math.max(0, flashTimer - dt);
+      screenShake = Math.max(0, screenShake - dt);
+      player.hitShake = Math.max(0, player.hitShake - dt);
+      player.invincible = Math.max(0, player.invincible - dt);
+      activeEffects.slow = Math.max(0, activeEffects.slow - dt);
+      activeEffects.shield = Math.max(0, activeEffects.shield - dt);
+
+      if (respawnTimer > 0) {
+        respawnTimer -= dt;
+        updateParticles(dt);
+        if (respawnTimer <= 0) {
+          placePlayerInRandomScene();
+          hunters = spawnHunters();
+          projectiles = [];
+          showToast(`Novo cenario: ${getActiveBiome().name}!`, 1.6);
+        }
+        updateHud();
+        return;
+      }
+
+      updatePlayer(dt);
+      updateShortcuts(dt);
+      updateCollectibles(dt);
+      updateHunters(dt);
+      updateProjectiles(dt);
+      updateParticles(dt);
+      updateHud();
+    }
+
+    function updatePlayer(dt) {
+      let dx = 0;
+      let dy = 0;
+      if (keys.has("ArrowLeft") || keys.has("KeyA")) dx -= 1;
+      if (keys.has("ArrowRight") || keys.has("KeyD")) dx += 1;
+      if (keys.has("ArrowUp") || keys.has("KeyW")) dy -= 1;
+      if (keys.has("ArrowDown") || keys.has("KeyS")) dy += 1;
+      dx += touchVector.x;
+      dy += touchVector.y;
+
+      const len = Math.hypot(dx, dy);
+      if (len > 0) {
+        dx /= len;
+        dy /= len;
+        player.facing = Math.atan2(dy, dx);
+      }
+
+      let terrain = 1;
+      if (activeBiomeId === "forest") terrain = 0.95;
+      if (activeBiomeId === "desert") terrain = 0.9;
+      if (activeBiomeId === "snow") terrain = 0.82;
+      if (activeBiomeId === "mountain") terrain = 0.86;
+      if (isWater(player.x, player.y)) terrain = player.boostVehicle === "boat" ? 1.12 : 0.50;
+
+      if (player.boostTimer > 0) {
+        player.boostTimer -= dt;
+        if (player.boostTimer <= 0) {
+          player.boostName = "";
+          player.boostVehicle = "";
+          player.boostSpeed = 1;
+        }
+      }
+
+      const shieldBonus = activeEffects.shield > 0 ? 1.08 : 1;
+      const speed = 178 * terrain * player.boostSpeed * shieldBonus;
+      player.vx = dx * speed;
+      player.vy = dy * speed;
+      moveCircle(player, player.vx, player.vy, dt);
+    }
+
+    function updateShortcuts(dt) {
+      for (const shortcut of shortcuts) {
+        shortcut.cooldown = Math.max(0, (shortcut.cooldown || 0) - dt);
+        if (shortcut.cooldown > 0) continue;
+        if (Math.hypot(player.x - shortcut.x, player.y - shortcut.y) >= shortcut.radius + player.radius) continue;
+
+        if (shortcut.type === "teleport") {
+          player.x = WORLD.width * shortcut.targetFx;
+          player.y = WORLD.height * shortcut.targetFy;
+          player.invincible = 0.7;
+          for (const tunnel of shortcuts) {
+            if (tunnel.type === "teleport") tunnel.cooldown = 2.2;
+          }
+          showToast("Tunel secreto usado!", 1.8);
+          continue;
+        }
+
+        player.boostTimer = shortcut.duration;
+        player.boostName = shortcut.label;
+        player.boostVehicle = shortcut.vehicle;
+        player.boostSpeed = shortcut.speed;
+        shortcut.cooldown = 4;
+        showToast(`${shortcut.label} ativado!`, 1.8);
+      }
+    }
+
+    function updateCollectibles(dt) {
+      for (const item of collectibles) {
+        item.bob += dt * 4;
+      }
+
+      collectibles = collectibles.filter((item) => {
+        if (Math.hypot(player.x - item.x, player.y - item.y) >= item.radius + player.radius) return true;
+        if (item.kind === "coin") {
+          coinState.add(item.id);
+          score += COIN_VALUE;
+          spawnSparkles(item.x, item.y, "#f7d36d", 10);
+          showToast(`Moeda +${COIN_VALUE}!`, 1.2);
+          return false;
+        }
+        powerState.add(item.id);
+        activatePower(item.powerType, item.x, item.y);
+        return false;
+      });
+    }
+
+    function activatePower(type, x, y) {
+      if (type === "slow") {
+        activeEffects.slow = 6;
+        spawnSparkles(x, y, "#65d6ff", 18);
+        showToast("Relogio lento: cacadores mais lentos!", 2);
+      } else if (type === "shield") {
+        activeEffects.shield = 7;
+        spawnSparkles(x, y, "#77f2a1", 20);
+        showToast("Campo de forca ativo!", 2);
+      } else {
+        triggerBlast(x, y);
+      }
+    }
+
+    function triggerBlast(x, y) {
+      const radius = Math.min(190, Math.max(150, WORLD.width * 0.15));
+      let removed = 0;
+      hunters = hunters.filter((hunter) => {
+        if (Math.hypot(hunter.x - x, hunter.y - y) <= radius) {
+          removed += 1;
+          spawnSparkles(hunter.x, hunter.y, "#ffe877", 26);
+          return false;
+        }
+        return true;
+      });
+      score += removed * 25;
+      particles.push({ type: "ring", x, y, radius: 12, maxRadius: radius, life: 0.45, color: "rgba(255,232,119,0.85)" });
+      showToast(removed ? `Granada de luz! +${removed * 25} pontos` : "Granada de luz ativada!", 1.8);
+    }
+
+    function updateHunters(dt) {
+      const shootRound = round >= 4;
+      const smartness = clamp((round - 1) / 7, 0, 1);
+      const slowFactor = activeEffects.slow > 0 ? 0.55 : 1;
+
+      for (const hunter of hunters) {
+        hunter.cooldown -= dt;
+        hunter.wobble += dt * (1.3 - smartness * 0.65);
+        if (hunter.aimTimer > 0) {
+          hunter.aimTimer -= dt;
+          if (hunter.aimTimer <= 0 && hunter.aimTarget) {
+            shootPaint(hunter, hunter.aimTarget);
+            hunter.aimTarget = null;
+            hunter.cooldown = Math.max(1.65, 3.0 - round * 0.06);
+          }
+        }
+
+        const prediction = 0.1 + smartness * 0.35;
+        let dx = player.x + player.vx * prediction - hunter.x;
+        let dy = player.y + player.vy * prediction - hunter.y;
+        const len = Math.max(1, Math.hypot(dx, dy));
+        dx /= len;
+        dy /= len;
+
+        const wobblePower = 0.45 * (1 - smartness);
+        let moveX = dx + Math.cos(hunter.wobble) * wobblePower;
+        let moveY = dy + Math.sin(hunter.wobble * 0.8) * wobblePower;
+        const moveLen = Math.max(1, Math.hypot(moveX, moveY));
+        moveX /= moveLen;
+        moveY /= moveLen;
+
+        const beforeX = hunter.x;
+        const beforeY = hunter.y;
+        moveCircle(hunter, moveX * hunter.speed * slowFactor, moveY * hunter.speed * slowFactor, dt);
+        if (Math.hypot(hunter.x - beforeX, hunter.y - beforeY) < 1) {
+          hunter.stuckTimer += dt;
+          const side = hunter.stuckTimer % 0.6 < 0.3 ? 1 : -1;
+          moveCircle(hunter, -moveY * hunter.speed * side * slowFactor, moveX * hunter.speed * side * slowFactor, dt);
+        } else {
+          hunter.stuckTimer = 0;
+        }
+
+        if (distance(hunter, player) < hunter.radius + player.radius + 5) {
+          if (activeEffects.shield > 0) {
+            score += 20;
+            spawnSparkles(hunter.x, hunter.y, "#77f2a1", 28);
+            hunter.remove = true;
+            showToast("Campo de forca desintegrou um cacador! +20", 1.5);
+          } else {
+            loseLife("O cacador chegou perto demais.");
+            return;
+          }
+        }
+
+        const range = Math.min(260, 185 + round * 8);
+        if (shootRound && hunter.cooldown <= 0 && !hunter.aimTarget && distance(hunter, player) < range) {
+          hunter.aimTimer = 0.55;
+          hunter.aimTarget = { x: player.x, y: player.y };
+          hunter.cooldown = 0.55;
+        }
+      }
+
+      hunters = hunters.filter((hunter) => !hunter.remove);
+    }
+
+    function shootPaint(hunter, target) {
+      const dx = target.x - hunter.x;
+      const dy = target.y - hunter.y;
+      const len = Math.max(1, Math.hypot(dx, dy));
+      const speed = Math.min(235, 180 + round * 5);
+      projectiles.push({
+        x: hunter.x,
+        y: hunter.y,
+        vx: (dx / len) * speed,
+        vy: (dy / len) * speed,
+        radius: 9,
+        life: 1.7,
+        color: round % 2 === 0 ? "#2176ae" : "#d95d4f"
+      });
+    }
+
+    function updateProjectiles(dt) {
+      for (const shot of projectiles) {
+        shot.x += shot.vx * dt;
+        shot.y += shot.vy * dt;
+        shot.life -= dt;
+      }
+
+      let hitPlayer = false;
+      projectiles = projectiles.filter((shot) => {
+        if (shot.life <= 0 || shot.x < -20 || shot.y < -20 || shot.x > WORLD.width + 20 || shot.y > WORLD.height + 20) return false;
+        if (Math.hypot(shot.x - player.x, shot.y - player.y) < shot.radius + player.radius) {
+          if (activeEffects.shield > 0) {
+            spawnSparkles(shot.x, shot.y, "#77f2a1", 8);
+            return false;
+          }
+          hitPlayer = true;
+          return false;
+        }
+        return true;
+      });
+
+      if (hitPlayer) {
+        projectiles = [];
+        loseLife("Uma bolinha de tinta acertou o personagem.");
+      }
+    }
+
+    function spawnSparkles(x, y, color, count) {
+      for (let i = 0; i < count; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 80 + Math.random() * 160;
+        particles.push({ type: "spark", x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 0.45 + Math.random() * 0.35, size: 3 + Math.random() * 5, color });
+      }
+    }
+
+    function updateParticles(dt) {
+      for (const part of particles) {
+        part.life -= dt;
+        if (part.type === "spark") {
+          part.x += part.vx * dt;
+          part.y += part.vy * dt;
+          part.vy += 80 * dt;
+        } else {
+          part.radius += (part.maxRadius - part.radius) * Math.min(1, dt * 8);
+        }
+      }
+      particles = particles.filter((part) => part.life > 0);
+    }
+
+    function updateHud() {
+      roundHud.textContent = `Rodada ${round}`;
+      timeHud.textContent = `Tempo ${Math.ceil(timeLeft)}s`;
+      livesHud.textContent = `Vidas ${"♥".repeat(Math.max(0, lives))}`;
+      scoreHud.textContent = `Pontos ${score}`;
+      biomeHud.textContent = getActiveBiome().name;
+
+      const effects = [];
+      if (player.boostTimer > 0) effects.push(`${player.boostName} ${Math.ceil(player.boostTimer)}s`);
+      if (activeEffects.slow > 0) effects.push(`Lento ${Math.ceil(activeEffects.slow)}s`);
+      if (activeEffects.shield > 0) effects.push(`Campo ${Math.ceil(activeEffects.shield)}s`);
+      effectHud.textContent = effects.length ? effects.join(" | ") : "Sem poder ativo";
+    }
+
+    function gameLoop(now) {
+      if (state !== "playing") {
+        draw();
+        return;
+      }
+      const dt = Math.min(0.033, (now - lastFrame) / 1000 || 0);
+      lastFrame = now;
+      update(dt);
+      draw();
+      if (state === "playing") requestAnimationFrame(gameLoop);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, WORLD.width, WORLD.height);
+      const shakePower = screenShake > 0 ? 8 * (screenShake / 0.55) : 0;
+      const shakeX = shakePower ? (Math.random() - 0.5) * shakePower : 0;
+      const shakeY = shakePower ? (Math.random() - 0.5) * shakePower : 0;
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+      drawWorld();
+      drawShortcuts();
+      drawCollectibles();
+      drawAimWarnings();
+      drawProjectiles();
+      drawHunters();
+      drawPlayer();
+      drawParticles();
+      ctx.restore();
+      if (messageTimer > 0 && lastMessage) drawToast(lastMessage);
+      if (state === "playing" && round >= 4) drawAdvancedHint();
+    }
+
+    function drawWorld() {
+      const biome = getActiveBiome();
+      const gradient = ctx.createLinearGradient(0, 0, 0, WORLD.height);
+      gradient.addColorStop(0, biome.colors[0]);
+      gradient.addColorStop(0.50, biome.colors[1]);
+      gradient.addColorStop(1, biome.colors[2]);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+      drawCloudGlow();
+      drawBiomeBackdrop(activeBiomeId);
+      drawRoomDecorations(activeBiomeId);
+      drawRoomPaths(activeBiomeId);
+      drawSceneObstacles();
+      drawPortals();
+      drawRoomTitle(biome.name);
+    }
+
+    function drawCloudGlow() {
+      ctx.save();
+      ctx.globalAlpha = 0.20;
+      ctx.fillStyle = "#ffffff";
+      for (let i = 0; i < 5; i += 1) {
+        ctx.beginPath();
+        ctx.arc(WORLD.width * (0.12 + i * 0.20), WORLD.height * (0.12 + (i % 2) * 0.08), 42 + i * 9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawBiomeBackdrop(id) {
+      const w = WORLD.width;
+      const h = WORLD.height;
+      if (id === "forest") {
+        ctx.fillStyle = "rgba(49, 96, 42, 0.34)";
+        for (let x = -60; x < w + 80; x += 115) {
+          ctx.beginPath();
+          ctx.arc(x, h * 0.18, 86, 0, Math.PI * 2);
+          ctx.arc(x + 42, h * 0.22, 72, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        drawWoodPlatform(w * 0.16, h * 0.36, w * 0.28, 24);
+        drawWoodPlatform(w * 0.56, h * 0.35, w * 0.28, 24);
+        drawWoodPlatform(w * 0.32, h * 0.78, w * 0.36, 26);
+        drawRope(w * 0.44, h * 0.20, w * 0.55, h * 0.72);
+      } else if (id === "desert") {
+        ctx.fillStyle = "rgba(117, 76, 35, 0.20)";
+        for (let x = -60; x < w + 80; x += 210) {
+          ctx.beginPath();
+          ctx.ellipse(x, h * 0.76, 150, 38, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        drawWoodPlatform(w * 0.34, h * 0.38, w * 0.26, 22);
+        drawWoodPlatform(w * 0.55, h * 0.67, w * 0.24, 22);
+      } else if (id === "snow") {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+        for (let x = -80; x < w + 120; x += 190) {
+          ctx.beginPath();
+          ctx.arc(x, h * 0.78, 115, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        drawIcePlatform(w * 0.16, h * 0.34, w * 0.30, 22);
+        drawIcePlatform(w * 0.58, h * 0.31, w * 0.24, 22);
+        drawIcePlatform(w * 0.36, h * 0.73, w * 0.34, 24);
+      } else if (id === "beach") {
+        ctx.fillStyle = "#3f9fd1";
+        for (const zone of waterZones) {
+          ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
+          ctx.strokeStyle = "rgba(255,255,255,0.58)";
+          ctx.lineWidth = 3;
+          for (let y = zone.y + 24; y < zone.y + zone.h; y += 38) {
+            ctx.beginPath();
+            for (let x = zone.x; x < zone.x + zone.w + 20; x += 28) ctx.lineTo(x, y + Math.sin((x + y) / 32) * 6);
+            ctx.stroke();
+          }
+        }
+        drawWoodPlatform(w * 0.52, h * 0.43, w * 0.34, 22);
+        drawWoodPlatform(w * 0.20, h * 0.38, w * 0.22, 22);
+      } else if (id === "city") {
+        ctx.fillStyle = "#404b58";
+        ctx.fillRect(0, h * 0.47, w, h * 0.12);
+        ctx.fillRect(w * 0.45, 0, w * 0.10, h);
+        ctx.fillStyle = "rgba(255,255,255,0.58)";
+        for (let x = 22; x < w; x += 74) ctx.fillRect(x, h * 0.525, 36, 6);
+        for (let y = 28; y < h; y += 74) ctx.fillRect(w * 0.49, y, 6, 34);
+        drawWoodPlatform(w * 0.32, h * 0.30, w * 0.36, 20);
+        drawWoodPlatform(w * 0.32, h * 0.77, w * 0.36, 20);
+      } else {
+        ctx.fillStyle = "rgba(38, 45, 43, 0.28)";
+        for (let x = -60; x < w + 120; x += 180) {
+          ctx.beginPath();
+          ctx.moveTo(x, h * 0.48);
+          ctx.lineTo(x + 90, h * 0.18);
+          ctx.lineTo(x + 190, h * 0.50);
+          ctx.closePath();
+          ctx.fill();
+        }
+        drawWoodPlatform(w * 0.30, h * 0.37, w * 0.38, 22);
+        drawWoodPlatform(w * 0.48, h * 0.75, w * 0.34, 22);
+        drawRope(w * 0.38, h * 0.37, w * 0.56, h * 0.74);
+      }
+    }
+
+    function drawRoomDecorations(id) {
+      for (const item of decorations) {
+        ctx.save();
+        ctx.translate(item.x, item.y);
+        ctx.rotate(item.rot);
+        if (id === "forest") {
+          ctx.fillStyle = "#1f6b3b";
+          ctx.beginPath();
+          ctx.arc(0, 0, item.size * 0.55, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (id === "desert") {
+          ctx.strokeStyle = "rgba(104, 73, 35, 0.32)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(-item.size, 0);
+          ctx.lineTo(item.size, 0);
+          ctx.stroke();
+        } else if (id === "snow") {
+          ctx.strokeStyle = "rgba(47, 118, 152, 0.42)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-item.size * 0.45, 0);
+          ctx.lineTo(item.size * 0.45, 0);
+          ctx.moveTo(0, -item.size * 0.45);
+          ctx.lineTo(0, item.size * 0.45);
+          ctx.stroke();
+        } else if (id === "city") {
+          ctx.fillStyle = "rgba(255, 224, 114, 0.38)";
+          ctx.fillRect(-item.size * 0.25, -item.size * 0.25, item.size * 0.5, item.size * 0.5);
+        } else if (id === "beach") {
+          ctx.fillStyle = "rgba(255,255,255,0.42)";
+          ctx.beginPath();
+          ctx.arc(0, 0, item.size * 0.28, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(48, 56, 52, 0.32)";
+          ctx.beginPath();
+          ctx.moveTo(0, -item.size * 0.6);
+          ctx.lineTo(item.size * 0.55, item.size * 0.45);
+          ctx.lineTo(-item.size * 0.55, item.size * 0.45);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawRoomPaths(id) {
+      ctx.save();
+      ctx.globalAlpha = 0.34;
+      ctx.strokeStyle = id === "city" ? "#f5f7fa" : "#fff6d8";
+      ctx.lineWidth = 26;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(WORLD.width * 0.50, WORLD.height * 0.16);
+      ctx.lineTo(WORLD.width * 0.50, WORLD.height * 0.84);
+      ctx.moveTo(WORLD.width * 0.16, WORLD.height * 0.50);
+      ctx.lineTo(WORLD.width * 0.84, WORLD.height * 0.50);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSceneObstacles() {
+      for (const obstacle of obstacles) {
+        if (obstacle.kind === "building") {
+          ctx.fillStyle = "#66717e";
+          roundedRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h, 8);
+          ctx.fill();
+          ctx.fillStyle = "#f3d36b";
+          for (let x = obstacle.x + 14; x < obstacle.x + obstacle.w - 8; x += 28) {
+            for (let y = obstacle.y + 14; y < obstacle.y + obstacle.h - 8; y += 26) ctx.fillRect(x, y, 10, 10);
+          }
+        } else if (obstacle.kind.includes("tree") || obstacle.kind === "palm" || obstacle.kind === "snow-pine") {
+          drawTreeObstacle(obstacle);
+        } else if (obstacle.kind.includes("platform") || obstacle.kind === "pier" || obstacle.kind === "scaffold" || obstacle.kind === "rope-bridge") {
+          drawWoodPlatform(obstacle.x, obstacle.y, obstacle.w, Math.max(20, obstacle.h));
+        } else if (obstacle.kind.includes("ice")) {
+          drawIcePlatform(obstacle.x, obstacle.y, obstacle.w, Math.max(20, obstacle.h));
+        } else if (obstacle.kind === "cactus") {
+          drawCactusObstacle(obstacle);
+        } else {
+          ctx.fillStyle = obstacle.kind === "dune-wall" ? "rgba(141, 91, 35, 0.42)" : "#626962";
+          roundedRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h, 18);
+          ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.20)";
+          ctx.beginPath();
+          ctx.arc(obstacle.x + obstacle.w * 0.35, obstacle.y + obstacle.h * 0.35, Math.min(22, obstacle.w * 0.16), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawTreeObstacle(obstacle) {
+      ctx.fillStyle = "#67451f";
+      ctx.fillRect(obstacle.x + obstacle.w * 0.43, obstacle.y + obstacle.h * 0.35, obstacle.w * 0.14, obstacle.h * 0.58);
+      ctx.fillStyle = obstacle.kind === "palm" ? "#2d8a54" : "#1f6b3b";
+      ctx.beginPath();
+      ctx.arc(obstacle.x + obstacle.w * 0.50, obstacle.y + obstacle.h * 0.30, obstacle.w * 0.36, 0, Math.PI * 2);
+      ctx.arc(obstacle.x + obstacle.w * 0.32, obstacle.y + obstacle.h * 0.42, obstacle.w * 0.30, 0, Math.PI * 2);
+      ctx.arc(obstacle.x + obstacle.w * 0.68, obstacle.y + obstacle.h * 0.42, obstacle.w * 0.30, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawCactusObstacle(obstacle) {
+      ctx.strokeStyle = "#447047";
+      ctx.lineWidth = Math.max(10, obstacle.w * 0.12);
+      ctx.lineCap = "round";
+      const cx = obstacle.x + obstacle.w * 0.5;
+      const by = obstacle.y + obstacle.h * 0.84;
+      ctx.beginPath();
+      ctx.moveTo(cx, by);
+      ctx.lineTo(cx, obstacle.y + obstacle.h * 0.18);
+      ctx.moveTo(cx, obstacle.y + obstacle.h * 0.45);
+      ctx.lineTo(obstacle.x + obstacle.w * 0.24, obstacle.y + obstacle.h * 0.35);
+      ctx.moveTo(cx, obstacle.y + obstacle.h * 0.55);
+      ctx.lineTo(obstacle.x + obstacle.w * 0.75, obstacle.y + obstacle.h * 0.42);
+      ctx.stroke();
+    }
+
+    function drawWoodPlatform(x, y, w, h) {
+      ctx.fillStyle = "#8a5325";
+      roundedRect(x, y, w, h, 10);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(55, 31, 12, 0.55)";
+      ctx.lineWidth = 3;
+      for (let px = x + 18; px < x + w; px += 38) {
+        ctx.beginPath();
+        ctx.moveTo(px, y + 4);
+        ctx.lineTo(px, y + h - 4);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "rgba(255, 229, 164, 0.35)";
+      ctx.beginPath();
+      ctx.moveTo(x + 8, y + h * 0.35);
+      ctx.lineTo(x + w - 8, y + h * 0.35);
+      ctx.stroke();
+    }
+
+    function drawIcePlatform(x, y, w, h) {
+      ctx.fillStyle = "#dff7ff";
+      roundedRect(x, y, w, h, 12);
+      ctx.fill();
+      ctx.strokeStyle = "#74b8d0";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function drawRope(x1, y1, x2, y2) {
+      ctx.strokeStyle = "#6a451e";
+      ctx.lineWidth = 5;
+      ctx.setLineDash([14, 12]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawPortals() {
+      const links = roomLinks[activeBiomeId] || {};
+      for (const dir of Object.keys(links)) drawPortal(dir, links[dir], biomes[links[dir]].name);
+    }
+
+    function drawPortal(dir, targetId, label) {
+      const isSide = dir === "left" || dir === "right";
+      const span = portalSpan(dir);
+      const x = dir === "left" ? 0 : dir === "right" ? WORLD.width : WORLD.width / 2;
+      const y = dir === "top" ? 0 : dir === "bottom" ? WORLD.height : WORLD.height / 2;
+      ctx.save();
+      ctx.fillStyle = "rgba(255,250,240,0.84)";
+      ctx.strokeStyle = "#f7d36d";
+      ctx.lineWidth = 5;
+      if (isSide) {
+        const px = dir === "left" ? 0 : WORLD.width - 26;
+        roundedRect(px, y - span / 2, 26, span, 8);
+      } else {
+        const py = dir === "top" ? 0 : WORLD.height - 26;
+        roundedRect(x - span / 2, py, span, 26, 8);
+      }
+      ctx.fill();
+      ctx.stroke();
+      const image = portalImages[targetId];
+      ctx.save();
+      if (isSide) {
+        const imageX = dir === "left" ? 12 : WORLD.width - 102;
+        drawAsset(image, imageX, y - 45, 90, 50, () => {});
+      } else {
+        const imageY = dir === "top" ? 10 : WORLD.height - 62;
+        drawAsset(image, x - 64, imageY, 128, 52, () => {});
+      }
+      ctx.restore();
+      ctx.fillStyle = "#18212d";
+      ctx.font = "900 13px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const labelX = dir === "left" ? 72 : dir === "right" ? WORLD.width - 72 : x;
+      const labelY = dir === "top" ? 48 : dir === "bottom" ? WORLD.height - 48 : y;
+      ctx.fillText(label, labelX, labelY);
+      ctx.restore();
+    }
+
+    function drawRoomTitle(name) {
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 64px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(name, WORLD.width / 2, WORLD.height * 0.13);
+      ctx.restore();
+    }
+
+    function drawShortcuts() {
+      for (const shortcut of shortcuts) {
+        ctx.save();
+        ctx.globalAlpha = shortcut.cooldown > 0 ? 0.45 : 1;
+        ctx.translate(shortcut.x, shortcut.y);
+        ctx.fillStyle = "rgba(255,255,255,0.68)";
+        ctx.beginPath();
+        ctx.arc(0, 0, shortcut.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff1a8";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        drawAsset(vehicleImages[shortcut.vehicle], -44, -48, 88, 88, () => drawFallbackVehicle(shortcut.vehicle));
+        ctx.fillStyle = "#17212f";
+        ctx.font = "900 13px Segoe UI, Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(shortcut.label, 0, shortcut.radius + 18);
+        ctx.restore();
+      }
+    }
+
+    function drawCollectibles() {
+      for (const item of collectibles) {
+        const y = item.y + Math.sin(item.bob) * 4;
+        if (item.kind === "coin") drawCoin(item.x, y);
+        else drawPower(item.x, y, item.powerType);
+      }
+    }
+
+    function drawCoin(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "rgba(24,33,45,0.16)";
+      ctx.beginPath();
+      ctx.ellipse(0, 16, 13, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#f7d36d";
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#9a6a2f";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = "#fff7bd";
+      ctx.beginPath();
+      ctx.arc(-5, -5, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#9a6a2f";
+      ctx.font = "900 14px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("$", 1, 1);
+      ctx.restore();
+    }
+
+    function drawPower(x, y, type) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "rgba(24,33,45,0.16)";
+      ctx.beginPath();
+      ctx.ellipse(0, 28, 21, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      drawAsset(powerImages[type], -34, -36, 68, 68, () => drawFallbackPower(type));
+      ctx.restore();
+    }
+
+    function drawAimWarnings() {
+      for (const hunter of hunters) {
+        if (!hunter.aimTarget) continue;
+        ctx.save();
+        ctx.globalAlpha = 0.30 + hunter.aimTimer * 0.8;
+        ctx.strokeStyle = "#ffef7a";
+        ctx.lineWidth = 5;
+        ctx.setLineDash([12, 10]);
+        ctx.beginPath();
+        ctx.moveTo(hunter.x, hunter.y);
+        ctx.lineTo(hunter.aimTarget.x, hunter.aimTarget.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(255, 239, 122, 0.55)";
+        ctx.beginPath();
+        ctx.arc(hunter.aimTarget.x, hunter.aimTarget.y, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawProjectiles() {
+      for (const shot of projectiles) {
+        ctx.save();
+        ctx.fillStyle = shot.color;
+        ctx.beginPath();
+        ctx.arc(shot.x, shot.y, shot.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.75)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawHunters() {
+      for (const hunter of hunters) drawHunter(hunter);
+    }
+
+    function drawHunter(hunter) {
+      const outfits = {
+        desert: ["#c9994b", "#69451f"],
+        forest: ["#315d3b", "#1f3a2a"],
+        snow: ["#e9f8ff", "#4a97b8"],
+        beach: ["#e85d45", "#ffd25d"],
+        city: ["#56616f", "#28313c"],
+        mountain: ["#77654b", "#44413b"]
+      };
+      const outfit = outfits[activeBiomeId] || outfits.forest;
+      ctx.save();
+      ctx.translate(hunter.x, hunter.y);
+      ctx.rotate(Math.atan2(player.y - hunter.y, player.x - hunter.x));
+      ctx.fillStyle = "rgba(24,33,45,0.18)";
+      ctx.beginPath();
+      ctx.ellipse(0, 19, 18, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = outfit[0];
+      roundedRect(-13, -2, 26, 31, 8);
+      ctx.fill();
+      ctx.fillStyle = "#f0c097";
+      ctx.beginPath();
+      ctx.arc(0, -16, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = outfit[1];
+      ctx.fillRect(-15, -27, 30, 9);
+      ctx.fillRect(-9, -35, 18, 8);
+      ctx.strokeStyle = "#2c3035";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(12, 3);
+      ctx.lineTo(31, -6);
+      ctx.stroke();
+      ctx.strokeStyle = round >= 4 ? "#ffe877" : "#2176ae";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(35, -8, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#18212d";
+      ctx.beginPath();
+      ctx.arc(4, -17, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      const flicker = player.invincible > 0 && Math.floor(player.invincible * 12) % 2 === 0;
+      if (flicker) return;
+      drawVehicleAura();
+      if (activeEffects.shield > 0) drawShieldAura();
+      const img = heroImages[selectedHero.id];
+      const hitOffset = player.hitShake > 0 ? Math.sin(player.hitShake * 90) * 7 : 0;
+      ctx.save();
+      ctx.translate(player.x + hitOffset, player.y);
+      ctx.rotate(player.facing * 0.10 + (player.hitShake > 0 ? Math.sin(player.hitShake * 70) * 0.12 : 0));
+      drawAsset(img, -34, -54, 68, 74, drawFallbackHero);
+      ctx.restore();
+    }
+
+    function drawVehicleAura() {
+      if (!player.boostVehicle) return;
+      const img = vehicleImages[player.boostVehicle];
+      ctx.save();
+      ctx.globalAlpha = 0.92;
+      drawAsset(img, player.x - 48, player.y - 16, 96, 72, () => {});
+      ctx.restore();
+    }
+
+    function drawShieldAura() {
+      ctx.save();
+      ctx.strokeStyle = "rgba(119, 242, 161, 0.86)";
+      ctx.fillStyle = "rgba(119, 242, 161, 0.16)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.radius + 19 + Math.sin(performance.now() / 120) * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      for (const part of particles) {
+        ctx.save();
+        if (part.type === "ring") {
+          ctx.globalAlpha = clamp(part.life / 0.45, 0, 1);
+          ctx.strokeStyle = part.color;
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.arc(part.x, part.y, part.radius, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.globalAlpha = clamp(part.life / 0.7, 0, 1);
+          ctx.fillStyle = part.color;
+          ctx.beginPath();
+          ctx.arc(part.x, part.y, part.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawAsset(image, x, y, w, h, fallback) {
+      if (image && image.complete && image.naturalWidth > 0) {
+        ctx.drawImage(image, x, y, w, h);
+      } else {
+        fallback();
+      }
+    }
+
+    function drawFallbackVehicle(vehicle) {
+      ctx.fillStyle = vehicle === "car" ? "#d95d4f" : vehicle === "boat" ? "#2176ae" : "#8a5325";
+      roundedRect(-28, -15, 56, 30, 10);
+      ctx.fill();
+    }
+
+    function drawFallbackPower(type) {
+      ctx.fillStyle = type === "slow" ? "#65d6ff" : type === "shield" ? "#77f2a1" : "#ffe877";
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#17212f";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function drawFallbackHero() {
+      ctx.fillStyle = "#2f8f5b";
+      roundedRect(-15, -10, 30, 36, 8);
+      ctx.fill();
+      ctx.fillStyle = "#f0c097";
+      ctx.beginPath();
+      ctx.arc(0, -25, 15, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawToast(text) {
+      ctx.save();
+      const width = Math.min(520, Math.max(260, text.length * 9 + 40));
+      const x = WORLD.width / 2 - width / 2;
+      const y = 76;
+      ctx.fillStyle = "rgba(255,250,240,0.94)";
+      roundedRect(x, y, width, 44, 8);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(24,33,45,0.18)";
+      ctx.stroke();
+      ctx.fillStyle = "#18212d";
+      ctx.font = "900 16px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, WORLD.width / 2, y + 23);
+      ctx.restore();
+    }
+
+    function drawAdvancedHint() {
+      ctx.save();
+      ctx.fillStyle = "rgba(24,33,45,0.68)";
+      roundedRect(WORLD.width - 272, WORLD.height - 58, 252, 42, 8);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "800 13px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Cuidado: aviso amarelo antes do tiro!", WORLD.width - 146, WORLD.height - 37);
+      ctx.restore();
+    }
+
+    function roundedRect(x, y, w, h, r) {
+      const radius = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function renderHeroCarousel() {
+      selectedHero = heroOptions[selectedHeroIndex];
+      heroPreview.src = selectedHero.src;
+      heroPreview.alt = selectedHero.name;
+      heroName.textContent = selectedHero.name;
+      heroDots.innerHTML = "";
+      heroOptions.forEach((_, index) => {
+        const dot = document.createElement("span");
+        dot.className = `hero-dot${index === selectedHeroIndex ? " active" : ""}`;
+        heroDots.appendChild(dot);
+      });
+    }
+
+    function selectHero(delta) {
+      selectedHeroIndex = (selectedHeroIndex + delta + heroOptions.length) % heroOptions.length;
+      renderHeroCarousel();
+    }
+
+    characterForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      startGame();
+    });
+
+    prevHero.addEventListener("click", () => selectHero(-1));
+    nextHero.addEventListener("click", () => selectHero(1));
+
+    pauseButton.addEventListener("click", () => {
+      if (state === "playing") pauseGame();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      const movementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyA", "KeyD", "KeyW", "KeyS", "Space"];
+      if (movementKeys.includes(event.code) || event.code === "Enter" || event.code === "Escape") event.preventDefault();
+
+      if (dialogActions) {
+        if (event.code === "Enter" && dialogActions.primary) dialogActions.primary();
+        if (event.code === "Escape") {
+          if (dialogActions.secondary) dialogActions.secondary();
+          else hideMessage();
+        }
+        return;
+      }
+
+      if (state === "menu") {
+        if (event.code === "ArrowLeft" || event.code === "KeyA") selectHero(-1);
+        if (event.code === "ArrowRight" || event.code === "KeyD") selectHero(1);
+        if (event.code === "Enter" || event.code === "Space") startGame();
+        return;
+      }
+
+      if (state === "playing") {
+        keys.add(event.code);
+        if (event.code === "KeyP" || event.code === "Escape") pauseGame();
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      keys.delete(event.code);
+    });
+
+    function setTouchDirection(button, active) {
+      if (active) {
+        touchVector.x = Number(button.dataset.x || 0);
+        touchVector.y = Number(button.dataset.y || 0);
+        button.classList.add("active");
+      } else {
+        touchVector.x = 0;
+        touchVector.y = 0;
+        button.classList.remove("active");
+      }
+    }
+
+    touchControls.addEventListener("pointerdown", (event) => {
+      const button = event.target.closest(".dpad-button");
+      if (!button) return;
+      event.preventDefault();
+      touchVector.pointerId = event.pointerId;
+      button.setPointerCapture(event.pointerId);
+      setTouchDirection(button, true);
+    });
+
+    touchControls.addEventListener("pointerup", (event) => {
+      const button = event.target.closest(".dpad-button");
+      if (!button || touchVector.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      touchVector.pointerId = null;
+      setTouchDirection(button, false);
+    });
+
+    touchControls.addEventListener("pointercancel", (event) => {
+      const button = event.target.closest(".dpad-button");
+      if (!button) return;
+      touchVector.pointerId = null;
+      setTouchDirection(button, false);
+    });
+
+    touchControls.addEventListener("pointerleave", (event) => {
+      const button = event.target.closest(".dpad-button");
+      if (!button || touchVector.pointerId !== event.pointerId) return;
+      touchVector.pointerId = null;
+      setTouchDirection(button, false);
+    });
+
+    window.addEventListener("resize", () => {
+      if (gameScreen.classList.contains("active")) {
+        resizeCanvas();
+        draw();
+      }
+    });
+
+    renderHeroCarousel();
+  </script>
+</body>
+</html>
