@@ -318,12 +318,12 @@
       right: max(18px, env(safe-area-inset-right));
       bottom: max(18px, env(safe-area-inset-bottom));
       z-index: 3;
-      width: 156px;
-      height: 156px;
+      width: 132px;
+      height: 132px;
       display: none;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 8px;
+      gap: 3px;
       pointer-events: auto;
       touch-action: none;
       user-select: none;
@@ -341,6 +341,7 @@
       box-shadow: 0 8px 22px rgba(24, 33, 45, 0.30);
       backdrop-filter: blur(8px);
       font-size: 1.25rem;
+      pointer-events: auto;
     }
 
     .dpad-button:active,
@@ -373,8 +374,9 @@
       grid-column: 2;
       grid-row: 2;
       border-radius: 999px;
-      background: rgba(255, 250, 240, 0.36);
+      background: rgba(255, 250, 240, 0.30);
       box-shadow: inset 0 0 0 1px rgba(24, 33, 45, 0.22);
+      pointer-events: none;
     }
 
     @media (max-width: 860px) {
@@ -476,9 +478,9 @@
       }
 
       .touch-controls {
-        width: 138px;
-        height: 138px;
-        gap: 7px;
+        width: 120px;
+        height: 120px;
+        gap: 2px;
       }
     }
   </style>
@@ -780,6 +782,59 @@
       osc.stop(now + duration + 0.03);
     }
 
+    function playTone(frequency, duration, type = "sine", gainValue = 0.055, delay = 0, endFrequency = null) {
+      const audio = ensureAudio();
+      if (!audio) return;
+      const now = audio.currentTime + delay;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = type;
+      if (osc.frequency.setValueAtTime) {
+        osc.frequency.setValueAtTime(frequency, now);
+        if (endFrequency && osc.frequency.exponentialRampToValueAtTime) {
+          osc.frequency.exponentialRampToValueAtTime(endFrequency, now + duration);
+        }
+      } else {
+        osc.frequency.value = frequency;
+      }
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain);
+      gain.connect(audio.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.04);
+    }
+
+    function playSoundEffect(name) {
+      if (name === "scene") {
+        playTone(392, 0.12, "triangle", 0.050, 0);
+        playTone(523, 0.12, "triangle", 0.045, 0.08);
+        playTone(659, 0.16, "triangle", 0.040, 0.16);
+      } else if (name === "coin") {
+        playTone(988, 0.07, "sine", 0.050, 0);
+        playTone(1319, 0.09, "sine", 0.042, 0.06);
+      } else if (name === "power") {
+        playTone(440, 0.16, "triangle", 0.045, 0, 880);
+        playTone(660, 0.18, "sine", 0.035, 0.05, 990);
+      } else if (name === "blast") {
+        playTone(160, 0.18, "sawtooth", 0.055, 0, 90);
+        playTone(740, 0.12, "triangle", 0.045, 0.08);
+        playTone(980, 0.10, "sine", 0.038, 0.16);
+      } else if (name === "caught") {
+        playTone(220, 0.18, "square", 0.050, 0, 130);
+        playTone(165, 0.16, "triangle", 0.045, 0.12, 98);
+      } else if (name === "shield") {
+        playTone(660, 0.10, "sine", 0.040, 0);
+        playTone(880, 0.12, "triangle", 0.035, 0.08);
+      } else if (name === "round") {
+        playTone(523, 0.12, "triangle", 0.045, 0);
+        playTone(659, 0.12, "triangle", 0.045, 0.10);
+        playTone(784, 0.18, "triangle", 0.045, 0.20);
+        playTone(1047, 0.22, "sine", 0.035, 0.32);
+      }
+    }
+
     function playBiomeMusic(id) {
       const audio = ensureAudio();
       if (!audio || currentMusicBiome === id) return;
@@ -970,6 +1025,7 @@
       activeBiomeId = exit.target;
       buildScene();
       playBiomeMusic(activeBiomeId);
+      playSoundEffect("scene");
       if (exit.dir === "left") player.x = WORLD.width - player.radius - 28;
       if (exit.dir === "right") player.x = player.radius + 28;
       if (exit.dir === "top") player.y = WORLD.height - player.radius - 28;
@@ -1038,6 +1094,7 @@
       player.hitShake = 0;
       transitionLock = 0;
       playBiomeMusic(activeBiomeId);
+      playSoundEffect("scene");
     }
 
     function safePlayerCenter() {
@@ -1115,6 +1172,7 @@
       state = "roundWin";
       pauseButton.textContent = "II";
       score += 50 + round * 10;
+      playSoundEffect("round");
       showMessage(`Rodada ${round} completa!`, `Bonus de sobrevivencia! Pontos: ${score}.`, "Proxima rodada", () => {
         round += 1;
         hideMessage();
@@ -1132,6 +1190,7 @@
       screenShake = 0.55;
       player.hitShake = 0.55;
       spawnSparkles(player.x, player.y, "#ff7a67", 26);
+      playSoundEffect("caught");
       if (lives <= 0) {
         state = "gameOver";
         pauseButton.textContent = "II";
@@ -1313,6 +1372,7 @@
           coinState.add(item.id);
           score += COIN_VALUE;
           spawnSparkles(item.x, item.y, "#f7d36d", 10);
+          playSoundEffect("coin");
           showToast(`Moeda +${COIN_VALUE}!`, 1.2);
           return false;
         }
@@ -1326,10 +1386,12 @@
       if (type === "slow") {
         activeEffects.slow = 6;
         spawnSparkles(x, y, "#65d6ff", 18);
+        playSoundEffect("power");
         showToast("Relogio lento: cacadores mais lentos!", 2);
       } else if (type === "shield") {
         activeEffects.shield = 7;
         spawnSparkles(x, y, "#77f2a1", 20);
+        playSoundEffect("power");
         showToast("Campo de forca ativo!", 2);
       } else {
         triggerBlast(x, y);
@@ -1349,6 +1411,7 @@
       });
       score += removed * 25;
       particles.push({ type: "ring", x, y, radius: 12, maxRadius: radius, life: 0.45, color: "rgba(255,232,119,0.85)" });
+      playSoundEffect("blast");
       showToast(removed ? `Granada de luz! +${removed * 25} pontos` : "Granada de luz ativada!", 1.8);
     }
 
@@ -1398,6 +1461,7 @@
           if (activeEffects.shield > 0) {
             score += 20;
             spawnSparkles(hunter.x, hunter.y, "#77f2a1", 28);
+            playSoundEffect("shield");
             hunter.remove = true;
             showToast("Campo de forca desintegrou um cacador! +20", 1.5);
           } else {
@@ -1821,12 +1885,19 @@
         drawAsset(image, x - 64, imageY, 128, 52, () => {});
       }
       ctx.restore();
-      ctx.fillStyle = "#18212d";
-      ctx.font = "900 13px Segoe UI, Arial";
+      ctx.font = "900 20px Segoe UI, Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       const labelX = dir === "left" ? 72 : dir === "right" ? WORLD.width - 72 : x;
-      const labelY = dir === "top" ? 48 : dir === "bottom" ? WORLD.height - 48 : y;
+      const labelY = dir === "top" ? 74 : dir === "bottom" ? WORLD.height - 74 : y + 38;
+      const labelWidth = Math.max(92, ctx.measureText(label).width + 28);
+      ctx.fillStyle = "rgba(13, 23, 35, 0.86)";
+      roundedRect(labelX - labelWidth / 2, labelY - 18, labelWidth, 36, 8);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 241, 168, 0.92)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = "#ffffff";
       ctx.fillText(label, labelX, labelY);
       ctx.restore();
     }
@@ -2160,10 +2231,11 @@
 
     window.addEventListener("keydown", (event) => {
       const movementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyA", "KeyD", "KeyW", "KeyS", "Space"];
-      if (movementKeys.includes(event.code) || event.code === "Enter" || event.code === "Escape") event.preventDefault();
+      const isEnter = event.code === "Enter" || event.code === "NumpadEnter";
+      if (movementKeys.includes(event.code) || isEnter || event.code === "Escape") event.preventDefault();
 
       if (dialogActions) {
-        if (event.code === "Enter" && dialogActions.primary) dialogActions.primary();
+        if (isEnter && dialogActions.primary) dialogActions.primary();
         if (event.code === "Escape") {
           if (dialogActions.secondary) dialogActions.secondary();
           else hideMessage();
@@ -2174,7 +2246,7 @@
       if (state === "menu") {
         if (event.code === "ArrowLeft" || event.code === "KeyA") selectHero(-1);
         if (event.code === "ArrowRight" || event.code === "KeyD") selectHero(1);
-        if (event.code === "Enter" || event.code === "Space") startGame();
+        if (isEnter || event.code === "Space") startGame();
         return;
       }
 
@@ -2188,47 +2260,66 @@
       keys.delete(event.code);
     });
 
-    function setTouchDirection(button, active) {
-      if (active) {
-        touchVector.x = Number(button.dataset.x || 0);
-        touchVector.y = Number(button.dataset.y || 0);
-        button.classList.add("active");
-      } else {
-        touchVector.x = 0;
-        touchVector.y = 0;
-        button.classList.remove("active");
-      }
+    function clearDpadActive() {
+      touchControls.querySelectorAll(".dpad-button").forEach((button) => button.classList.remove("active"));
+    }
+
+    function updateTouchDirection(event) {
+      const rect = touchControls.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const rawX = (event.clientX - centerX) / (rect.width / 2);
+      const rawY = (event.clientY - centerY) / (rect.height / 2);
+      const deadZone = 0.18;
+      const x = Math.abs(rawX) < deadZone ? 0 : clamp(rawX, -1, 1);
+      const y = Math.abs(rawY) < deadZone ? 0 : clamp(rawY, -1, 1);
+      touchVector.x = x;
+      touchVector.y = y;
+      clearDpadActive();
+      const left = touchControls.querySelector(".dpad-left");
+      const right = touchControls.querySelector(".dpad-right");
+      const up = touchControls.querySelector(".dpad-up");
+      const down = touchControls.querySelector(".dpad-down");
+      if (x < -0.25 && left) left.classList.add("active");
+      if (x > 0.25 && right) right.classList.add("active");
+      if (y < -0.25 && up) up.classList.add("active");
+      if (y > 0.25 && down) down.classList.add("active");
+    }
+
+    function clearTouchDirection() {
+      touchVector.x = 0;
+      touchVector.y = 0;
+      touchVector.pointerId = null;
+      clearDpadActive();
     }
 
     touchControls.addEventListener("pointerdown", (event) => {
-      const button = event.target.closest(".dpad-button");
-      if (!button) return;
       event.preventDefault();
       touchVector.pointerId = event.pointerId;
-      button.setPointerCapture(event.pointerId);
-      setTouchDirection(button, true);
+      if (touchControls.setPointerCapture) touchControls.setPointerCapture(event.pointerId);
+      updateTouchDirection(event);
+    });
+
+    touchControls.addEventListener("pointermove", (event) => {
+      if (touchVector.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      updateTouchDirection(event);
     });
 
     touchControls.addEventListener("pointerup", (event) => {
-      const button = event.target.closest(".dpad-button");
-      if (!button || touchVector.pointerId !== event.pointerId) return;
+      if (touchVector.pointerId !== event.pointerId) return;
       event.preventDefault();
-      touchVector.pointerId = null;
-      setTouchDirection(button, false);
+      clearTouchDirection();
     });
 
     touchControls.addEventListener("pointercancel", (event) => {
-      const button = event.target.closest(".dpad-button");
-      if (!button) return;
-      touchVector.pointerId = null;
-      setTouchDirection(button, false);
+      if (touchVector.pointerId !== event.pointerId) return;
+      clearTouchDirection();
     });
 
     touchControls.addEventListener("pointerleave", (event) => {
-      const button = event.target.closest(".dpad-button");
-      if (!button || touchVector.pointerId !== event.pointerId) return;
-      touchVector.pointerId = null;
-      setTouchDirection(button, false);
+      if (touchVector.pointerId !== event.pointerId) return;
+      clearTouchDirection();
     });
 
     window.addEventListener("resize", () => {
