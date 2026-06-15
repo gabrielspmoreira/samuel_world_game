@@ -545,6 +545,7 @@
     const ROUND_SECONDS = 45;
     const PLAYER_RADIUS = 20;
     const HUNTER_RADIUS = 18;
+    const HUNTER_REINFORCEMENT_DELAY = 3;
     const COIN_VALUE = 10;
     const WORLD = { width: 1280, height: 720 };
 
@@ -699,6 +700,7 @@
     let flashTimer = 0;
     let transitionLock = 0;
     let respawnTimer = 0;
+    let hunterReinforcementTimer = 0;
     let screenShake = 0;
     let lastMessage = "";
     let decorations = [];
@@ -1089,6 +1091,7 @@
       player.y = clamp(player.y, player.radius + 20, WORLD.height - player.radius - 20);
       player.invincible = 0.75;
       transitionLock = 0.55;
+      hunterReinforcementTimer = 0;
       projectiles = [];
       hunters = spawnHunters();
       showToast(`Passagem para ${getActiveBiome().name}!`, 1.8);
@@ -1118,6 +1121,7 @@
       particles = [];
       flashTimer = 0;
       respawnTimer = 0;
+      hunterReinforcementTimer = 0;
       screenShake = 0;
       placePlayerInRandomScene();
       hunters = spawnHunters();
@@ -1282,6 +1286,7 @@
       }
       player.invincible = 1.2;
       respawnTimer = 0.60;
+      hunterReinforcementTimer = 0;
       hunters = [];
       projectiles = [];
       showToast("Voce foi pego! Preparando outro cenario...", 1.8);
@@ -1352,6 +1357,7 @@
         if (respawnTimer <= 0) {
           placePlayerInRandomScene();
           hunters = spawnHunters();
+          hunterReinforcementTimer = 0;
           projectiles = [];
           showToast(`Novo cenario: ${getActiveBiome().name}!`, 1.6);
         }
@@ -1363,6 +1369,7 @@
       updateShortcuts(dt);
       updateCollectibles(dt);
       updateHunters(dt);
+      updateHunterReinforcements(dt);
       updateProjectiles(dt);
       updateParticles(dt);
       updateHud();
@@ -1554,6 +1561,35 @@
       hunters = hunters.filter((hunter) => !hunter.remove);
     }
 
+    function updateHunterReinforcements(dt) {
+      if (state !== "playing" || respawnTimer > 0) {
+        hunterReinforcementTimer = 0;
+        return;
+      }
+
+      if (hunters.length > 0) {
+        hunterReinforcementTimer = 0;
+        return;
+      }
+
+      if (hunterReinforcementTimer <= 0) {
+        hunterReinforcementTimer = HUNTER_REINFORCEMENT_DELAY;
+        projectiles = [];
+        if (messageTimer <= 0.2) showToast("Novos cacadores em 3 segundos!", 1.6);
+        return;
+      }
+
+      hunterReinforcementTimer -= dt;
+      if (hunterReinforcementTimer > 0) return;
+
+      hunters = spawnHunters();
+      hunterReinforcementTimer = 0;
+      projectiles = [];
+      for (const hunter of hunters) spawnSparkles(hunter.x, hunter.y, "#f7d36d", 12);
+      playSoundEffect("scene");
+      showToast("Novos cacadores chegaram!", 1.6);
+    }
+
     function shootPaint(hunter, target) {
       const dx = target.x - hunter.x;
       const dy = target.y - hunter.y;
@@ -1630,6 +1666,7 @@
       if (player.boostTimer > 0) effects.push(`${player.boostName} ${Math.ceil(player.boostTimer)}s`);
       if (activeEffects.slow > 0) effects.push(`Lento ${Math.ceil(activeEffects.slow)}s`);
       if (activeEffects.shield > 0) effects.push(`Campo ${Math.ceil(activeEffects.shield)}s`);
+      if (hunterReinforcementTimer > 0) effects.push(`Cacadores em ${Math.ceil(hunterReinforcementTimer)}s`);
       effectHud.textContent = effects.length ? effects.join(" | ") : "Sem poder ativo";
     }
 
