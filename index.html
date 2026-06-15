@@ -715,6 +715,7 @@
     let touchVector = { x: 0, y: 0, pointerId: null };
     let dialogActions = null;
     let audioContext = null;
+    let audioUnlocked = false;
     let musicTimer = null;
     let currentMusicBiome = "";
     let musicStep = 0;
@@ -755,6 +756,11 @@
       return biomeIds[Math.floor(Math.random() * biomeIds.length)] || "forest";
     }
 
+    function isSmallScreenMode() {
+      const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      return coarsePointer || Math.min(WORLD.width, WORLD.height) <= 540 || WORLD.width <= 920;
+    }
+
     function ensureAudio() {
       if (!audioContext) {
         const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -762,9 +768,49 @@
         audioContext = new AudioCtor();
       }
       if (audioContext.state === "suspended") {
-        audioContext.resume();
+        const resumeResult = audioContext.resume();
+        if (resumeResult && resumeResult.catch) resumeResult.catch(() => {});
       }
       return audioContext;
+    }
+
+    function unlockAudio() {
+      const audio = ensureAudio();
+      if (!audio || audioUnlocked) return;
+
+      const ping = () => {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        try {
+          const osc = audio.createOscillator();
+          const gain = audio.createGain();
+          osc.type = "sine";
+          osc.frequency.value = 440;
+          gain.gain.setValueAtTime(0.0001, audio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.02);
+          osc.connect(gain);
+          gain.connect(audio.destination);
+          osc.start(audio.currentTime);
+          osc.stop(audio.currentTime + 0.03);
+        } catch (error) {
+          audioUnlocked = false;
+        }
+      };
+
+      if (audio.state === "suspended" && audio.resume) {
+        const resumeResult = audio.resume();
+        if (resumeResult && resumeResult.then) {
+          resumeResult.then(ping).catch(() => {});
+        } else {
+          ping();
+        }
+      } else {
+        ping();
+      }
+    }
+
+    function requestAudioUnlock() {
+      unlockAudio();
     }
 
     function midiToFrequency(note) {
@@ -852,8 +898,8 @@
         if (!audioContext || audioContext.state !== "running") return;
         const note = pattern.notes[musicStep % pattern.notes.length];
         const bass = pattern.bass[musicStep % pattern.bass.length];
-        playNote(note, 0.16, pattern.wave, 0.045);
-        if (musicStep % 2 === 0) playNote(bass, 0.22, "triangle", 0.025);
+        playNote(note, 0.16, pattern.wave, 0.060);
+        if (musicStep % 2 === 0) playNote(bass, 0.22, "triangle", 0.034);
         musicStep += 1;
       }, pattern.tempo);
     }
@@ -976,7 +1022,10 @@
     }
 
     function portalSpan(dir) {
-      return dir === "left" || dir === "right" ? Math.min(220, WORLD.height * 0.34) : Math.min(260, WORLD.width * 0.34);
+      if (dir === "left" || dir === "right") {
+        return isSmallScreenMode() ? Math.min(270, WORLD.height * 0.50) : Math.min(220, WORLD.height * 0.34);
+      }
+      return isSmallScreenMode() ? Math.min(340, WORLD.width * 0.42) : Math.min(260, WORLD.width * 0.34);
     }
 
     function isInsidePortal(dir, coord) {
@@ -1048,7 +1097,7 @@
     function startGame() {
       if (state === "playing") return;
       selectedHero = heroOptions[selectedHeroIndex];
-      ensureAudio();
+      unlockAudio();
       round = 1;
       lives = 3;
       score = 0;
@@ -1116,12 +1165,17 @@
 
     function spawnHunters() {
       const count = Math.min(5, 1 + Math.floor((round - 1) / 2));
+      const smallScreen = isSmallScreenMode();
+      const speedScale = smallScreen ? 0.55 : 1;
+      const edgeX = smallScreen ? Math.max(HUNTER_RADIUS + 12, Math.min(54, WORLD.width * 0.07)) : WORLD.width * 0.08;
+      const edgeY = smallScreen ? Math.max(HUNTER_RADIUS + 12, Math.min(54, WORLD.height * 0.10)) : WORLD.height * 0.12;
       const spawnPoints = [
-        { x: WORLD.width * 0.12, y: WORLD.height * 0.16 },
-        { x: WORLD.width * 0.88, y: WORLD.height * 0.18 },
-        { x: WORLD.width * 0.12, y: WORLD.height * 0.84 },
-        { x: WORLD.width * 0.88, y: WORLD.height * 0.82 },
-        { x: WORLD.width * 0.50, y: WORLD.height * 0.14 }
+        { x: edgeX, y: edgeY },
+        { x: WORLD.width - edgeX, y: edgeY },
+        { x: edgeX, y: WORLD.height - edgeY },
+        { x: WORLD.width - edgeX, y: WORLD.height - edgeY },
+        { x: WORLD.width * 0.50, y: edgeY },
+        { x: WORLD.width * 0.50, y: WORLD.height - edgeY }
       ].sort((a, b) => Math.hypot(b.x - player.x, b.y - player.y) - Math.hypot(a.x - player.x, a.y - player.y));
 
       const result = [];
@@ -1131,7 +1185,7 @@
           x: point.x,
           y: point.y,
           radius: HUNTER_RADIUS,
-          speed: 86 + round * 8 + i * 5,
+          speed: (86 + round * 8 + i * 5) * speedScale,
           wobble: Math.random() * Math.PI * 2,
           cooldown: 1.4 + Math.random(),
           aimTimer: 0,
@@ -1143,16 +1197,29 @@
     }
 
     function safeSpawnPoint(start) {
+      const smallScreen = isSmallScreenMode();
+      const diagonal = Math.hypot(WORLD.width, WORLD.height);
+      const minDistance = smallScreen ? Math.min(390, diagonal * 0.42) : Math.min(300, diagonal * 0.30);
+      const edgeX = smallScreen ? Math.max(HUNTER_RADIUS + 12, Math.min(54, WORLD.width * 0.07)) : WORLD.width * 0.08;
+      const edgeY = smallScreen ? Math.max(HUNTER_RADIUS + 12, Math.min(54, WORLD.height * 0.10)) : WORLD.height * 0.12;
+      const minEdge = smallScreen ? HUNTER_RADIUS + 8 : 40;
       const candidates = [
         start,
-        { x: WORLD.width * 0.18, y: WORLD.height * 0.20 },
-        { x: WORLD.width * 0.82, y: WORLD.height * 0.20 },
-        { x: WORLD.width * 0.18, y: WORLD.height * 0.80 },
-        { x: WORLD.width * 0.82, y: WORLD.height * 0.80 },
-        { x: WORLD.width * 0.50, y: WORLD.height * 0.18 },
-        { x: WORLD.width * 0.50, y: WORLD.height * 0.82 }
+        { x: edgeX, y: edgeY },
+        { x: WORLD.width - edgeX, y: edgeY },
+        { x: edgeX, y: WORLD.height - edgeY },
+        { x: WORLD.width - edgeX, y: WORLD.height - edgeY },
+        { x: WORLD.width * 0.50, y: edgeY },
+        { x: WORLD.width * 0.50, y: WORLD.height - edgeY }
       ];
-      return candidates.find((point) => point.x > 40 && point.x < WORLD.width - 40 && point.y > 40 && point.y < WORLD.height - 40 && !collidesObstacles(point.x, point.y, HUNTER_RADIUS + 2)) || candidates[1];
+      const valid = candidates.filter((point) => (
+        point.x > minEdge &&
+        point.x < WORLD.width - minEdge &&
+        point.y > minEdge &&
+        point.y < WORLD.height - minEdge &&
+        !collidesObstacles(point.x, point.y, HUNTER_RADIUS + 2)
+      )).sort((a, b) => Math.hypot(b.x - player.x, b.y - player.y) - Math.hypot(a.x - player.x, a.y - player.y));
+      return valid.find((point) => Math.hypot(point.x - player.x, point.y - player.y) >= minDistance) || valid[0] || candidates[1];
     }
 
     function pauseGame() {
@@ -1865,43 +1932,54 @@
 
     function drawPortal(dir, targetId, label) {
       const isSide = dir === "left" || dir === "right";
+      const smallScreen = isSmallScreenMode();
       const span = portalSpan(dir);
+      const thickness = smallScreen ? 34 : 26;
       const x = dir === "left" ? 0 : dir === "right" ? WORLD.width : WORLD.width / 2;
       const y = dir === "top" ? 0 : dir === "bottom" ? WORLD.height : WORLD.height / 2;
       ctx.save();
-      ctx.fillStyle = "rgba(255,250,240,0.84)";
+      ctx.fillStyle = "rgba(255,250,240,0.92)";
       ctx.strokeStyle = "#f7d36d";
-      ctx.lineWidth = 5;
+      ctx.lineWidth = smallScreen ? 6 : 5;
       if (isSide) {
-        const px = dir === "left" ? 0 : WORLD.width - 26;
-        roundedRect(px, y - span / 2, 26, span, 8);
+        const px = dir === "left" ? 0 : WORLD.width - thickness;
+        roundedRect(px, y - span / 2, thickness, span, 8);
       } else {
-        const py = dir === "top" ? 0 : WORLD.height - 26;
-        roundedRect(x - span / 2, py, span, 26, 8);
+        const py = dir === "top" ? 0 : WORLD.height - thickness;
+        roundedRect(x - span / 2, py, span, thickness, 8);
       }
       ctx.fill();
       ctx.stroke();
       const image = portalImages[targetId];
       ctx.save();
       if (isSide) {
-        const imageX = dir === "left" ? 12 : WORLD.width - 102;
-        drawAsset(image, imageX, y - 45, 90, 50, () => {});
+        const imageW = smallScreen ? 112 : 90;
+        const imageH = smallScreen ? 64 : 50;
+        const inset = smallScreen ? 34 : 12;
+        const imageX = dir === "left" ? inset : WORLD.width - inset - imageW;
+        const imageY = clamp(y - imageH / 2, smallScreen ? 76 : 8, WORLD.height - imageH - (smallScreen ? 42 : 8));
+        drawAsset(image, imageX, imageY, imageW, imageH, () => {});
       } else {
-        const imageY = dir === "top" ? 10 : WORLD.height - 62;
-        drawAsset(image, x - 64, imageY, 128, 52, () => {});
+        const imageW = smallScreen ? 150 : 128;
+        const imageH = smallScreen ? 62 : 52;
+        const imageY = dir === "top" ? (smallScreen ? 50 : 10) : WORLD.height - imageH - (smallScreen ? 34 : 10);
+        drawAsset(image, x - imageW / 2, imageY, imageW, imageH, () => {});
       }
       ctx.restore();
-      ctx.font = "900 20px Segoe UI, Arial";
+      ctx.font = `900 ${smallScreen ? 24 : 20}px Segoe UI, Arial`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      const labelX = dir === "left" ? 72 : dir === "right" ? WORLD.width - 72 : x;
-      const labelY = dir === "top" ? 74 : dir === "bottom" ? WORLD.height - 74 : y + 38;
+      const labelHeight = smallScreen ? 42 : 36;
       const labelWidth = Math.max(92, ctx.measureText(label).width + 28);
-      ctx.fillStyle = "rgba(13, 23, 35, 0.86)";
-      roundedRect(labelX - labelWidth / 2, labelY - 18, labelWidth, 36, 8);
+      let labelX = dir === "left" ? (smallScreen ? 116 : 72) : dir === "right" ? WORLD.width - (smallScreen ? 116 : 72) : x;
+      let labelY = dir === "top" ? (smallScreen ? 124 : 74) : dir === "bottom" ? WORLD.height - (smallScreen ? 112 : 74) : y + (smallScreen ? 56 : 38);
+      labelX = clamp(labelX, labelWidth / 2 + 10, WORLD.width - labelWidth / 2 - 10);
+      labelY = clamp(labelY, labelHeight / 2 + 10, WORLD.height - labelHeight / 2 - 10);
+      ctx.fillStyle = "rgba(5, 12, 20, 0.94)";
+      roundedRect(labelX - labelWidth / 2, labelY - labelHeight / 2, labelWidth, labelHeight, 8);
       ctx.fill();
       ctx.strokeStyle = "rgba(255, 241, 168, 0.92)";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = smallScreen ? 4 : 3;
       ctx.stroke();
       ctx.fillStyle = "#ffffff";
       ctx.fillText(label, labelX, labelY);
@@ -2235,7 +2313,12 @@
       if (state === "playing") pauseGame();
     });
 
+    window.addEventListener("pointerdown", requestAudioUnlock, { passive: true });
+    window.addEventListener("touchstart", requestAudioUnlock, { passive: true });
+    window.addEventListener("click", requestAudioUnlock, { passive: true });
+
     window.addEventListener("keydown", (event) => {
+      requestAudioUnlock();
       const movementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "KeyA", "KeyD", "KeyW", "KeyS", "Space"];
       const isEnter = event.code === "Enter" || event.code === "NumpadEnter";
       if (movementKeys.includes(event.code) || isEnter || event.code === "Escape") event.preventDefault();
@@ -2301,6 +2384,7 @@
 
     touchControls.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+      requestAudioUnlock();
       touchVector.pointerId = event.pointerId;
       if (touchControls.setPointerCapture) touchControls.setPointerCapture(event.pointerId);
       updateTouchDirection(event);
